@@ -1,0 +1,10 @@
+Lecture 1
+
+# Get linux enviorment 
+- Turn off autofill, co-pilot / assists
+
+Common Errors:
+
+ - implicit declaration of functions | means you are missing a library in #include
+
+review levels and differecnes of prescnendence

@@ -1,0 +1,1062 @@
+C PROGRAMMING LANGUAGE, 2ND EDITION (KERNIGHAN & RITCHIE)
+CHAPTERS 1-4 STUDY GUIDE + C FUNCTION / CODE DICTIONARY
+
+Purpose
+-------
+This reference is tailored to the Fall 2026 CSCI 2800 Computer Architecture & Operating
+Systems course. The course schedule assigns The C Programming Language, 2nd ed.,
+Chapters 1-4 in Week 0, then moves to Chapter 5, Chapter 8, and Appendix B in Week 1.
+The goal here is to understand what the book's examples are teaching, not memorize the
+example programs themselves.
+
+SOURCE BASIS
+-----------
+Primary source: The C Programming Language, 2nd Edition, Brian W. Kernighan and Dennis M. Ritchie.
+The book's table of contents places Chapters 1-4 on pp. 9-82 of the provided PDF.
+Course context: CSCI 2800 Fall 2026 schedule, Week 0 = C Ch.1-4; Week 1 = C Ch.5,8,App.B.
+
+====================================================================
+CHAPTER 1 - A TUTORIAL INTRODUCTION
+====================================================================
+
+BIG IDEA
+--------
+Chapter 1 is a guided tour of the basic mental model of C: a program is built from
+functions and variables; expressions compute values; statements control what happens;
+input/output lets the program interact with the outside world.
+
+WHAT THE EXAMPLES ARE REALLY TEACHING
+--------------------------------------
+1. Hello World
+   - Learn the minimum structure of a C program.
+   - main() is where execution begins.
+   - #include <stdio.h> gives access to standard I/O declarations.
+   - printf() is a function call; its argument is a string.
+   - Braces define a block and semicolons terminate statements.
+   - \n is one newline character represented by an escape sequence.
+
+2. Fahrenheit/Celsius table
+   - Variables must have declared types.
+   - Assignment stores a value in a variable.
+   - Arithmetic expressions produce values which can be assigned or passed to functions.
+   - while repeats work until a condition becomes false.
+   - Integer arithmetic is NOT the same as real-number arithmetic.
+     5/9 is integer division and becomes 0; 5.0/9.0 is floating-point division.
+   - printf format specifiers must agree with the argument types.
+
+3. for-loop version of the temperature table
+   - for is mainly a compact way to keep initialization, loop test, and update together.
+   - for and while are closely related; choose the one that makes the loop logic clearest.
+   - C lets you put an expression anywhere a value of the required type is expected.
+
+4. Symbolic constants (#define)
+   - Avoid magic numbers.
+   - Give constants meaningful names such as LOWER, UPPER, STEP.
+   - A #define is a preprocessor substitution, not a variable declaration.
+
+5. Character input/output: getchar() + putchar()
+   - Text can be modeled as a stream of characters.
+   - getchar() reads one character; putchar() writes one character.
+   - EOF is a special end-of-input value, so getchar() results are stored in int, not char.
+   - The idiom while ((c = getchar()) != EOF) is a fundamental C pattern.
+   - Parentheses around the assignment matter because = has lower precedence than !=.
+
+6. Character counter / line counter / word counter
+   - Programs can be built by repeatedly scanning a stream once.
+   - Counters are just state variables updated as input is processed.
+   - == tests equality; = assigns a value.
+   - && and || combine conditions and short-circuit left-to-right.
+   - A small state machine (e.g. IN vs OUT of a word) can express more complicated parsing.
+
+7. Character-frequency array
+   - Arrays store multiple same-type values under one name.
+   - Indexing begins at 0.
+   - Character values can participate in arithmetic because char values behave as small integers.
+   - c - '0' converts digit characters '0'..'9' to numeric indices 0..9.
+
+8. power() and other user-written functions
+   - Functions package one computation behind a name.
+   - A prototype tells the compiler what arguments and return type to expect.
+   - return sends a value back to the caller.
+   - Parameters and local variables belong to the function in which they are declared.
+
+9. Call by value
+   - C passes ordinary function arguments by value: the called function receives a copy.
+   - Changing an ordinary parameter does not change the caller's variable.
+   - Arrays are the important special-looking case: when an array is passed, the function gets
+     access to the array's underlying location, so its elements can be modified. Pointers in
+     Chapter 5 explain why this works.
+
+10. Character arrays / getline / copy / longest line
+    - C strings are arrays of char terminated by '\0'.
+    - getline() can read a line into an array and return its length.
+    - copy() demonstrates passing arrays to functions.
+    - A useful design pattern is: one function obtains data, another transforms/saves it,
+      and main coordinates the overall algorithm.
+
+11. External variables and scope
+    - Local variables are private to their function and are automatic by default.
+    - External variables are defined outside functions and can be shared.
+    - Global data can make communication easy, but too much shared state makes a program
+      harder to understand and modify.
+
+CHAPTER 1 TAKEAWAYS TO MEMORIZE
+-------------------------------
+- main is the program entry point.
+- A function call looks like function_name(arguments).
+- = means assignment; == means equality test.
+- int division truncates fractional parts.
+- getchar() returns int because it must be able to represent EOF.
+- Strings end with '\0'.
+- Arrays are zero-indexed.
+- C functions use call-by-value for ordinary arguments.
+- A function prototype should match how the function is defined and called.
+- Prefer meaningful constants over magic numbers.
+
+====================================================================
+CHAPTER 2 - TYPES, OPERATORS AND EXPRESSIONS
+====================================================================
+
+BIG IDEA
+--------
+Chapter 2 explains what values exist in C, what operations are legal on those values, and
+how C decides what type an expression has. This chapter is where many "it compiles but
+behaves strangely" bugs start.
+
+WHAT THE SECTIONS ARE REALLY TEACHING
+-------------------------------------
+1. Variable names
+   - Names are case-sensitive.
+   - Identifiers use letters/digits/underscore, with restrictions on the first character.
+   - Keywords such as if, int, float are reserved.
+   - Good names communicate purpose.
+
+2. Data types and sizes
+   - Core arithmetic/data types include char, int, short, long, float, double.
+   - signed/unsigned change integer ranges and behavior.
+   - Exact object sizes can depend on the implementation; do not assume every machine has
+     the same bit width just from the type name.
+
+3. Constants
+   - Integer, floating-point, character, and string constants have different forms.
+   - A character constant such as 'A' represents an integer value associated with the character.
+   - String literals such as "A" are arrays of characters ending in '\0'. They are NOT the same
+     thing as 'A'.
+
+4. Declarations
+   - A declaration tells the compiler the type and name of an object/function.
+   - Initialization gives an initial value.
+   - declaration and definition are related but not identical concepts; this becomes important
+     for external variables and multiple source files.
+
+5. Arithmetic operators
+   - +, -, *, /, % work on arithmetic operands.
+   - Integer / integer gives integer division.
+   - Remainder (%) is especially important for parity/divisibility tests.
+
+6. Relational and logical operators
+   - < <= > >= == != compare values.
+   - && means logical AND; || means logical OR; ! means logical NOT.
+   - In conditions, zero is false and any nonzero value is true.
+   - && and || short-circuit: the right operand is evaluated only when needed.
+   - This is different from bitwise & and |.
+
+7. Type conversions
+   - Mixed-type expressions may convert operands to a common type.
+   - Narrower values are often promoted to wider types for an operation.
+   - Assignment can convert the computed value to the destination type.
+   - Cast syntax: (type) expression.
+   - Be alert for information loss when converting floating point to integer or wider integer
+     types to narrower types.
+
+8. Increment/decrement
+   - ++ and -- change a variable by one.
+   - Prefix and postfix forms both change the variable but differ in the value of the expression:
+       ++i  -> increment, then value is the new i
+       i++  -> value is the old i, then increment
+   - Avoid combining side effects in expressions when evaluation order is unclear.
+
+9. Bitwise operators
+   - &  bitwise AND
+   - |  bitwise OR
+   - ^  bitwise XOR
+   - ~  one's complement
+   - << left shift
+   - >> right shift
+   - These operate on integer bit patterns and are foundational for systems programming.
+   - The book's getbits()/bitcount() examples are showing how to treat an integer as a packed
+     collection of bits.
+
+10. Assignment expressions
+   - x += y means x = x + y, with x evaluated only once.
+   - Related operators include -=, *=, /=, %=, <<=, >>=, &=, ^=, |=.
+   - Assignment itself is an expression with a value.
+
+11. Conditional expression
+   - condition ? expression1 : expression2 is a compact two-way choice.
+   - It is an expression and therefore can be used where a value is required.
+   - Use it for genuinely simple choices; do not sacrifice readability.
+
+12. Precedence and order of evaluation
+   - Precedence determines how an expression groups.
+   - Associativity handles operators with equal precedence.
+   - Use parentheses when the intended grouping is not immediately obvious.
+   - C generally does NOT guarantee the evaluation order of operands or function arguments.
+   - Never write code whose correctness depends on an unspecified evaluation order.
+
+CHAPTER 2 TAKEAWAYS TO MEMORIZE
+-------------------------------
+- Understand the difference between char, int, float, and double.
+- Know integer division and modulus.
+- Know = vs ==.
+- Know &&/|| vs &/|.
+- Know prefix vs postfix ++/--.
+- Know the basic bitwise operators.
+- Know what a cast does.
+- Parenthesize complicated expressions.
+- Never rely on an accidental evaluation order for expressions with side effects.
+
+====================================================================
+CHAPTER 3 - CONTROL FLOW
+====================================================================
+
+BIG IDEA
+--------
+Chapter 3 gives precise control over the order in which statements execute. The important
+skill is not memorizing syntax; it is being able to trace a program's control path.
+
+WHAT THE SECTIONS ARE REALLY TEACHING
+-------------------------------------
+1. Statements and blocks
+   - An expression becomes a statement when terminated with a semicolon.
+   - Braces group statements into one block.
+   - Blocks make the intended scope and control structure visible.
+
+2. if / else
+   - Decisions are based on whether an expression is zero or nonzero.
+   - In nested if statements, an else belongs to the nearest unmatched if unless braces force
+     a different structure.
+   - Use braces to make nested decisions unambiguous.
+
+3. else-if chains
+   - A sequence of tests is a multi-way decision evaluated from top to bottom.
+   - The first true condition wins; later conditions are not examined.
+   - The final else handles the default case.
+
+4. switch
+   - Best when one integer/character expression is being compared against several constant cases.
+   - case labels do not automatically stop execution.
+   - break usually prevents accidental fall-through.
+   - Several case labels can intentionally share one action.
+   - default handles unmatched values.
+
+5. while and for
+   - while checks the condition before each iteration.
+   - for packages initialization, condition, and update in one construct.
+   - for is often clearer for counted loops.
+   - A for loop can be thought of as initialization + while(test) + update (with caveats around
+     continue behavior).
+
+6. do-while
+   - The body executes at least once because the test is at the bottom.
+   - Use when the first execution must occur before the condition is checked.
+
+7. break and continue
+   - break exits the smallest enclosing loop or switch immediately.
+   - continue skips to the next loop iteration (specifically to the loop's continuation point).
+   - Use these to express exceptions in otherwise regular loops; do not make control flow hard
+     to trace.
+
+8. goto and labels
+   - goto transfers control to a label inside the same function.
+   - The book shows that goto can simplify a few escape/error cases, but most code is clearer
+     without it.
+   - The key lesson is structured control flow first; goto is a specialized tool, not the default.
+
+EXAMPLE/ALGORITHM TAKEAWAYS
+---------------------------
+- Binary search teaches "maintain a shrinking search interval" and uses a loop invariant-like
+  way of thinking even though the chapter is about C control flow.
+- Shell sort demonstrates that for loops can manage complex nested iteration and that loop
+  structure should match the algorithm.
+- reverse(s) demonstrates multiple expressions in a for loop and in-place transformation of data.
+- These examples reinforce that control flow is a tool for expressing an algorithm cleanly.
+
+CHAPTER 3 TAKEAWAYS TO MEMORIZE
+-------------------------------
+- if / else = choose one path.
+- switch = choose among constant cases.
+- while = repeat while condition is true, testing first.
+- do-while = repeat, but test after the body.
+- for = compact loop-control structure.
+- break = leave loop/switch.
+- continue = skip to next loop iteration.
+- goto = jump within the current function; normally use sparingly.
+
+====================================================================
+CHAPTER 4 - FUNCTIONS AND PROGRAM STRUCTURE
+====================================================================
+
+BIG IDEA
+--------
+Chapter 4 moves from "I can write a C program" to "I can structure a real C program." The
+core ideas are decomposition, interfaces, scope/linkage, separate compilation, persistent state,
+recursion, and preprocessing.
+
+WHAT THE EXAMPLES ARE REALLY TEACHING
+-------------------------------------
+1. Function basics
+   - Split a large computation into small named pieces.
+   - A good function hides implementation details behind a clear interface.
+   - Prototypes let the compiler check calls against the function's expected types.
+
+2. Functions returning non-integers
+   - A function can return float/double/etc., not just int.
+   - Example atof shows how a textual representation of a number can be converted to a
+     floating-point value.
+   - return expression is converted to the function's declared return type.
+   - Use void explicitly for a function that returns no value.
+
+3. External variables
+   - External/global variables can be shared by functions.
+   - Their lifetime is the whole execution of the program.
+   - They can be useful for truly shared state, but excessive use creates hidden data dependencies.
+
+4. Reverse Polish calculator
+   - This is more than a calculator example: it demonstrates program decomposition plus shared
+     state.
+   - push() and pop() isolate stack operations.
+   - getop() isolates input parsing.
+   - The example demonstrates how several small functions cooperate around a data structure.
+
+5. Scope rules
+   - Scope answers "where can this name be used?"
+   - Local variables/parameters are limited by their block/function scope.
+   - External names have file-based visibility rules.
+   - Do not confuse scope (where a name is visible) with lifetime (how long its storage exists).
+
+6. Header files
+   - Put shared declarations/prototypes in headers so multiple source files agree on interfaces.
+   - #include effectively makes declarations available to the current source file.
+   - This is the beginning of organizing a project into modules.
+
+7. static variables
+   - static changes storage duration and/or linkage depending on where it is used.
+   - A static local retains its value between function calls while remaining local in scope.
+   - A static external declaration can restrict linkage to the current source file.
+
+8. register variables
+   - register is a request that a variable be kept in a CPU register when practical.
+   - The compiler may ignore the hint; modern compilers usually optimize better than manual hints.
+   - The important historical lesson is that C exposes machine-level considerations, but the
+     implementation still has control.
+
+9. Block structure
+   - Variables can be declared in nested blocks.
+   - An inner declaration can hide an outer declaration with the same name.
+   - Keep scopes as small as practical to reduce accidental interactions.
+
+10. Initialization
+    - Variables can be initialized when declared.
+    - Automatic objects are initialized when execution enters the block.
+    - Static objects are initialized once before program execution.
+
+11. Recursion
+    - A function can call itself.
+    - Recursion works when each call makes progress toward a stopping/base case.
+    - qsort in the chapter demonstrates divide-and-conquer: partition the problem, recursively
+      solve smaller parts, then finish by restoring the partition element.
+    - Recursion can make an algorithm easier to express, but it does not automatically make it
+      faster or use less memory.
+
+12. The C preprocessor
+    - #include inserts another file's contents before compilation.
+    - #define performs textual macro substitution.
+    - Function-like macros can accept arguments.
+    - Conditional compilation (#if/#ifdef/#ifndef/#else/#elif/#endif) can include code only
+      under certain compile-time conditions.
+    - Macros are powerful but dangerous because arguments may be evaluated more than once and
+      precedence/parentheses can cause surprises.
+
+CHAPTER 4 TAKEAWAYS TO MEMORIZE
+-------------------------------
+- Prototype = promise about a function's interface.
+- Definition = actual implementation/storage definition.
+- extern = declaration referring to an object defined elsewhere.
+- Scope = where a name can be used.
+- Lifetime = how long the object exists.
+- static local = retains state between calls.
+- Header file = shared declarations/interfaces.
+- Recursion = function calls itself; base case stops it.
+- #include = include declarations/code from another file.
+- #define = preprocessing substitution/macro.
+- Prefer functions for typed, single-evaluation behavior; use macros carefully.
+
+====================================================================
+THE C MENTAL MODEL YOU SHOULD HAVE AFTER CHAPTERS 1-4
+====================================================================
+
+Think of a C program as:
+
+    source code
+       |
+       +-- preprocessor (#include, #define)
+       |
+       +-- compiler checks/types/translates code
+       |
+       +-- functions + variables form the program
+       |
+       +-- control flow chooses what executes
+       |
+       +-- expressions compute values
+       |
+       +-- I/O functions interact with streams
+
+The next major step in your CSCI 2800 course is Chapter 5, where arrays and functions are
+connected explicitly to memory through pointers. That is why the end of this guide focuses so
+much on arrays, strings, function parameters, and scope: those concepts become the foundation
+for pointers and systems programming.
+
+====================================================================
+C FUNCTION / CODE DICTIONARY
+====================================================================
+
+How to read entries
+-------------------
+FORMAT: function_name(parameter types) -> return type
+HEADER: standard library header when applicable
+USE: what it does
+PATTERN: a practical usage pattern
+CAUTION: common mistake or important rule
+
+--------------------------------------------------------------------
+STANDARD I/O + BASIC STRING FUNCTIONS USED IN / AROUND CH.1-4
+--------------------------------------------------------------------
+
+printf()
+  Header: <stdio.h>
+  Prototype: int printf(const char *format, ...);
+  Use: formatted output to standard output.
+  Pattern:
+      printf("Hello\n");
+      printf("x = %d\n", x);
+      printf("name = %s\n", name);
+  Useful formats:
+      %d   integer
+      %f   floating-point output
+      %c   character
+      %s   string
+      %o   octal integer
+      %x   hexadecimal integer
+      %%   literal percent sign
+  Width/precision examples:
+      %6d    at least 6 characters wide
+      %.2f   2 digits after decimal point
+      %6.2f  at least 6 wide, 2 digits after decimal
+  CAUTION: format specifiers and argument types must agree.
+
+getchar()
+  Header: <stdio.h>
+  Prototype: int getchar(void);
+  Use: read the next character from standard input.
+  Pattern:
+      int c;
+      c = getchar();
+  Most important pattern:
+      int c;
+      while ((c = getchar()) != EOF) {
+          /* process c */
+      }
+  CAUTION: store the result in int, not char, because getchar() must also represent EOF.
+
+putchar()
+  Header: <stdio.h>
+  Prototype: int putchar(int c);
+  Use: write one character to standard output.
+  Pattern:
+      putchar(c);
+      putchar('\n');
+  Combine with getchar:
+      int c;
+      while ((c = getchar()) != EOF)
+          putchar(c);
+
+EOF
+  Header: <stdio.h>
+  Use: symbolic constant returned by input functions at end of input / on end-of-file conditions.
+  Pattern:
+      while ((c = getchar()) != EOF) { ... }
+  CAUTION: do not assume a specific numeric value for EOF.
+
+strlen()
+  Header: <string.h>
+  Prototype: size_t strlen(const char *s);
+  Use: return the length of a C string, excluding the terminating '\0'.
+  Pattern:
+      int len = strlen(s);
+  Example style from Ch.3:
+      for (i = 0, j = strlen(s) - 1; i < j; i++, j--) { ... }
+  CAUTION: strlen counts characters up to '\0'; a C string must be null-terminated.
+
+sqrt()
+  Header: <math.h>
+  Prototype: double sqrt(double x);
+  Use: square root.
+  Pattern:
+      double r = sqrt((double)n);
+  Note: Chapter 2 uses sqrt as an example for explicit casting and type conversion.
+
+--------------------------------------------------------------------
+CHARACTER / NUMBER CONVERSION EXAMPLES FROM THE BOOK
+--------------------------------------------------------------------
+
+atoi() -- book's own example
+  Signature: int atoi(char s[])
+  Use: convert a string of digit characters into an integer.
+  Conceptual pattern:
+      n = 0;
+      for each digit c:
+          n = 10 * n + (c - '0');
+      return n;
+  Why c - '0' works: the digit characters have consecutive numeric values.
+  Later library note: the standard library provides more powerful conversion routines such
+  as strtol; the book's atoi is primarily teaching character arithmetic and parsing.
+
+atof() -- book's own example in Ch.4
+  Signature: double atof(char s[])
+  Use: convert a string representing a floating-point number to double.
+  Conceptual structure:
+      skip leading whitespace
+      read integer part
+      read fractional part
+      combine into floating-point value
+  Ch.4 exercise extends the same idea to scientific notation such as 123.45e-6.
+
+lower() -- book's own ASCII example
+  Signature: int lower(int c)
+  Use: convert an uppercase ASCII letter to lowercase; otherwise return c unchanged.
+  Pattern:
+      if (c >= 'A' && c <= 'Z')
+          return c + 'a' - 'A';
+      return c;
+  Caution: this specific implementation assumes ASCII. The book points to <ctype.h>
+  for portable character classification/conversion.
+
+--------------------------------------------------------------------
+CHARACTER-CLASS FUNCTIONS MENTIONED FOR PORTABLE TESTING
+--------------------------------------------------------------------
+
+These are standard library functions discussed by the book when replacing character-range
+checks with portable tests. They are implemented in <ctype.h>.
+
+#include <ctype.h>
+
+isdigit(c)   -> nonzero if c is a decimal digit
+isspace(c)   -> nonzero if c is whitespace
+isupper(c)   -> nonzero if c is uppercase
+islower(c)   -> nonzero if c is lowercase
+isalpha(c)   -> nonzero if c is alphabetic
+isalnum(c)   -> nonzero if c is alphanumeric
+tolower(c)   -> lowercase form of c when applicable
+toupper(c)   -> uppercase form of c when applicable
+
+Pattern:
+    if (isdigit(c)) {
+        ...
+    }
+
+Important: these functions can return any nonzero value for true; code should test them as
+conditions rather than assuming true must equal exactly 1.
+
+--------------------------------------------------------------------
+BOOK FUNCTIONS FOR ARRAYS / STRINGS / INPUT
+--------------------------------------------------------------------
+
+auto getline() -- book's own example (not the POSIX getline API)
+  Signature: int getline(char s[], int lim)
+  Use: read one input line into s and return its length.
+  Pattern:
+      int len = getline(line, MAXLINE);
+  Key idea:
+      - stops when newline or EOF is reached
+      - prevents writing past lim-1 characters
+      - appends '\0' to form a C string
+  CAUTION: this function name conflicts with modern library APIs on some systems. The book's
+  version is a teaching function named getline.
+
+copy()
+  Signature: void copy(char to[], char from[])
+  Use: copy one null-terminated C string into another array.
+  Pattern:
+      copy(longest, line);
+  CAUTION: the destination must have enough storage.
+
+reverse()
+  Signature: void reverse(char s[])
+  Use: reverse a string in place.
+  Core pattern:
+      for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
+          c = s[i];
+          s[i] = s[j];
+          s[j] = c;
+      }
+  Concept: two-index traversal from opposite ends.
+
+--------------------------------------------------------------------
+CONTROL-FLOW / ALGORITHM FUNCTIONS FROM CH.3
+--------------------------------------------------------------------
+
+binary search -- book example
+  Typical signature:
+      int binsearch(int x, int v[], int n)
+  Use: search a sorted array by repeatedly halving the remaining interval.
+  Concept:
+      low = 0;
+      high = n - 1;
+      while (low <= high) {
+          mid = (low + high) / 2;
+          if (x < v[mid])
+              high = mid - 1;
+          else if (x > v[mid])
+              low = mid + 1;
+          else
+              return mid;
+      }
+      return -1;
+  Lesson: control flow should maintain a clear shrinking search range.
+
+shellsort()
+  Typical signature:
+      void shellsort(int v[], int n)
+  Use: sort an integer array using diminishing gaps and nested loops.
+  Lesson: nested loops can express multi-stage algorithms; for() can manage nontrivial
+  loop updates such as gap /= 2.
+
+escape() / expand()
+  These are exercise functions from Ch.3 rather than standard library calls.
+  escape(s,t): convert special characters to visible escape sequences such as \n and \t.
+  expand(s1,s2): expand shorthand such as a-z into the corresponding character sequence.
+  Lesson: character parsing requires careful state and boundary handling.
+
+--------------------------------------------------------------------
+CH.4: DATA-STRUCTURE / CALCULATOR HELPER FUNCTIONS
+--------------------------------------------------------------------
+
+push()
+  Signature: void push(double f)
+  Use: put a numeric value onto the calculator stack.
+  Typical underlying idea:
+      val[sp++] = f;
+  Lesson: hide stack-management details inside one function.
+
+pop()
+  Signature: double pop(void)
+  Use: remove and return the top calculator-stack value.
+  Typical idea:
+      if (sp > 0)
+          return val[--sp];
+      else
+          error("stack empty");
+  Lesson: functions can enforce/check invariants of a shared data structure.
+
+getop()
+  Typical signature:
+      int getop(char s[])
+  Use: read the next input token and distinguish an operator from a number.
+  Lesson: parsing should be isolated from the calculator's main control logic.
+
+getch()
+  Typical signature:
+      int getch(void)
+  Use: return the next character, using a pushback buffer before standard input.
+  Book pattern:
+      return (bufp > 0) ? buf[--bufp] : getchar();
+  Lesson: a small abstraction can make token parsing easier.
+
+ungetch()
+  Typical signature:
+      void ungetch(int c)
+  Use: push one character back so the next getch() returns it.
+  Book pattern:
+      if (bufp >= BUFSIZE)
+          printf("ungetch: too many characters\n");
+      else
+          buf[bufp++] = c;
+  Lesson: use shared state carefully; the buffer and index persist between calls.
+
+printd()
+  Signature idea: void printd(int n)
+  Use: recursively print an integer as decimal characters.
+  Lesson: recursion can decompose a problem into a smaller version of itself and then do the
+  output while calls return.
+
+itoa()
+  Signature idea: void itoa(int n, char s[])
+  Use: convert an integer to a C string representation.
+  Lesson: conversion routines combine arithmetic, character encoding, and arrays; the recursive
+  version demonstrates another valid organization of the same algorithm.
+
+qsort() -- chapter's own simplified recursive sort
+  Signature:
+      void qsort(int v[], int left, int right)
+  Use: recursively sort a portion of an integer array.
+  Lesson: divide-and-conquer; stop when the subarray has fewer than two elements.
+  Note: the C standard library also has a qsort() with a different, more general interface.
+
+swap()
+  Signature:
+      void swap(int v[], int i, int j)
+  Use: exchange two array elements.
+  Pattern:
+      temp = v[i];
+      v[i] = v[j];
+      v[j] = temp;
+  Lesson: extract repeated operations into helper functions.
+
+--------------------------------------------------------------------
+CORE LANGUAGE CODE PATTERNS
+--------------------------------------------------------------------
+
+PROGRAM SKELETON
+#include <stdio.h>
+
+int main(void)
+{
+    /* declarations */
+
+    /* statements */
+
+    return 0;
+}
+
+FUNCTION PROTOTYPE
+return_type function_name(type param1, type param2);
+
+FUNCTION DEFINITION
+return_type function_name(type param1, type param2)
+{
+    /* local declarations */
+    /* statements */
+    return value;
+}
+
+FUNCTION WITH NO PARAMETERS
+void f(void)
+{
+    ...
+}
+
+VOID FUNCTION CALL
+void print_something(void)
+{
+    printf("hello\n");
+}
+
+int main(void)
+{
+    print_something();
+    return 0;
+}
+
+IF / ELSE
+if (condition) {
+    ...
+} else {
+    ...
+}
+
+ELSE-IF
+if (condition1) {
+    ...
+} else if (condition2) {
+    ...
+} else {
+    ...
+}
+
+SWITCH
+switch (value) {
+case 1:
+    ...
+    break;
+case 2:
+    ...
+    break;
+default:
+    ...
+    break;
+}
+
+WHILE
+while (condition) {
+    ...
+}
+
+FOR
+for (initialization; condition; update) {
+    ...
+}
+
+DO-WHILE
+do {
+    ...
+} while (condition);
+
+BREAK
+for (...) {
+    if (condition)
+        break;
+}
+
+CONTINUE
+for (...) {
+    if (condition)
+        continue;
+    ...
+}
+
+GOTO / LABEL (use sparingly)
+goto done;
+...
+done:
+    ...
+
+ARRAY
+int a[10];
+
+/* valid indices: 0 through 9 */
+a[0] = 5;
+a[i] = 10;
+
+CHARACTER ARRAY / C STRING
+char s[100];
+s[0] = 'H';
+s[1] = 'i';
+s[2] = '\0';
+
+/* equivalent literal */
+char s2[] = "Hi";
+
+READ A STRING-LIKE LINE WITH BOOK'S getline()
+char line[1000];
+int len;
+
+while ((len = getline(line, 1000)) > 0) {
+    printf("%s", line);
+}
+
+READ UNTIL EOF
+int c;
+while ((c = getchar()) != EOF) {
+    putchar(c);
+}
+
+COUNT CHARACTERS
+long count = 0;
+while (getchar() != EOF)
+    ++count;
+printf("%ld\n", count);
+
+COMMON CHARACTER TESTS
+if (c == ' ' || c == '\n' || c == '\t') {
+    ...
+}
+
+DIGIT TEST
+if (c >= '0' && c <= '9') {
+    int digit = c - '0';
+}
+
+PERCENT / REMAINDER FOR PARITY
+if (n % 2 == 0)
+    printf("even\n");
+else
+    printf("odd\n");
+
+PREFIX VS POSTFIX
+++i;      /* increment, use new value */
+i++;      /* increment, expression uses old value */
+--i;
+i--;
+
+ASSIGNMENT OPERATORS
+x += 2;
+x -= 2;
+x *= 2;
+x /= 2;
+x %= 2;
+x <<= 1;
+x >>= 1;
+x &= mask;
+x |= mask;
+x ^= mask;
+
+CONDITIONAL OPERATOR
+max = (a > b) ? a : b;
+
+CAST
+(double)n
+(int)result
+
+BITWISE BASICS
+x & mask      /* select/clear bits using a mask */
+x | mask      /* set bits */
+x ^ mask      /* toggle bits */
+~x            /* invert all bits */
+x << n        /* shift left */
+x >> n        /* shift right */
+
+BIT MASK PATTERN
+if ((x & MASK) == 0) {
+    ...
+}
+
+EXTERNAL VARIABLE
+int sp;
+double val[MAXVAL];
+
+void push(double f)
+{
+    ...
+}
+
+EXTERN DECLARATION
+extern double val[];
+extern int sp;
+
+STATIC LOCAL
+void counter(void)
+{
+    static int count = 0;
+    ++count;
+    printf("%d\n", count);
+}
+
+MACRO CONSTANT
+#define MAXLINE 1000
+#define LOWER 0
+#define UPPER 300
+#define STEP 20
+
+FUNCTION-LIKE MACRO -- SAFE PARENTHESES
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+
+WARNING: macros can evaluate arguments more than once. Avoid calls such as MAX(i++, j++).
+
+HEADER INCLUDE
+#include <stdio.h>     /* system / standard header */
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+#include "myheader.h" /* project/local header */
+
+CONDITIONAL COMPILATION
+#ifdef DEBUG
+    printf("debug info\n");
+#endif
+
+#ifndef MYHEADER_H
+#define MYHEADER_H
+/* declarations */
+#endif
+
+====================================================================
+OPERATOR QUICK LOOKUP
+====================================================================
+
+Arithmetic:
++  add
+-  subtract / unary negative
+*  multiply
+/  divide
+%  remainder
+
+Relational:
+<  <=  >  >=
+== equal
+!= not equal
+
+Logical:
+&& AND
+|| OR
+!  NOT
+
+Bitwise:
+&  AND
+|  OR
+^  XOR
+~  complement
+<< left shift
+>> right shift
+
+Assignment:
+=  +=  -=  *=  /=  %=  <<=  >>=  &=  ^=  |=
+
+Increment:
+++i / i++
+--i / i--
+
+Conditional:
+condition ? a : b
+
+Address/pointer operators (introduced fully in Ch.5, but worth recognizing now):
+&x  address of x
+*p  object pointed to by p
+
+\a alert (bell) character 
+\\ backslash
+\b backspace 
+\? question mark
+\f formfeed 
+\' single quote
+\n newline 
+\" double quote
+\r carriage return 
+\ooo octal number
+\t horizontal tab 
+\xhh hexadecimal number
+\v vertical tab
+
+====================================================================
+COMMON BEGINNER TRAPS FROM CHAPTERS 1-4
+====================================================================
+
+1. Writing c = getchar(); with char c instead of int c when testing EOF.
+2. Writing if (x = 5) when you meant if (x == 5).
+3. Forgetting that 5/9 is integer division when both operands are ints.
+4. Forgetting the '\0' terminator on a C string.
+5. Reading/writing past an array's valid indices.
+6. Forgetting break in a switch and causing accidental fall-through.
+7. Assuming i++ and ++i are interchangeable inside a larger expression.
+8. Depending on function-argument evaluation order.
+9. Using a macro that evaluates an argument more than once.
+10. Overusing external variables when a function argument would make data flow clearer.
+11. Confusing scope with lifetime.
+12. Assuming typedef/header/prototype declarations allocate storage when they only describe types
+    or interfaces (the exact declaration/definition distinction becomes increasingly important as
+    you move into multi-file programs).
+
+====================================================================
+WHAT TO BE READY FOR IN CSCI 2800 WEEK 1
+====================================================================
+
+Your Fall 2026 schedule moves next to:
+- Chapter 5: pointers, arrays, pointer/function arguments, pointer arithmetic, command-line args.
+- Chapter 8: UNIX system interface, file descriptors, low-level read/write, open/close/unlink,
+  lseek and system-level memory allocation examples.
+- Appendix B: standard-library reference.
+
+The bridge is:
+    arrays -> addresses -> pointers -> modifying caller data -> dynamic memory -> system calls
+
+So before starting Chapter 5, make sure you are comfortable with:
+- arrays and zero-based indexing
+- C strings and '\0'
+- function parameters / return values
+- call by value
+- getchar()/putchar() and EOF
+- scope and external variables
+- basic bitwise operators
+- casting and integer vs floating-point arithmetic
+
+END OF REFERENCE
