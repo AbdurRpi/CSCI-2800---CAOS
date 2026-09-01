@@ -2,6 +2,9 @@
 Bash$ gcc -Wall -Werror simple.c
 Bash$ gcc -E -wall -werror simple.c <== preprocessor 
 
+COMPILE VIA: gcc -Wall -Werror lab1.c -o lab1 -lm 
+THEN: ./lab1
+
 Always look at man(ual) pages for functions
 - man printf
 - man 3 printf <- gives library functions
@@ -18,15 +21,16 @@ int main(){
 
    double logn, expn;
 
-   printf("                      x");
-   printf("  x  ln(x)           e");
-   printf("---  --------------  -----------------");
-   for (int x = 0; x <= 7; x++)
+   printf("                      x\n");
+   printf("  x  ln(x)           e\n");
+   printf("---  --------------  -----------------\n");
+   for (int x = 1; x <= 8; x++){
       expn = exp(x);
-      logn = log(expn);
-      printf(" %d  %.13f           %.13f");
+      logn = log(x);
+      printf("  %d  %.13f  %.13f\n", x, logn, expn);
+   }    
    printf("---  --------------  -----------------");
-
+   return 0;
    
 
 
