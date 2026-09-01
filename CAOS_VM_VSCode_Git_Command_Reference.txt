@@ -1,0 +1,348 @@
+CAOS VM, VS CODE, GIT, AND C COMMAND REFERENCE
+================================================
+
+IMPORTANT
+---------
+Keep the GitHub repository PRIVATE. The CSCI 2800 syllabus prohibits publicly
+posting assignment code.
+
+VM INFORMATION
+--------------
+VM hostname:        caos
+Ubuntu version:     Ubuntu Server 22.04.5 LTS
+Username:           abdur
+Tailscale IP:       100.86.88.47
+LAN IP:             192.168.1.197
+Project directory:  /home/abdur/CAOS
+
+
+1. CONNECT THROUGH VS CODE
+--------------------------
+Before connecting, confirm that Tailscale is running on the Mac.
+
+1. Open VS Code.
+2. Select View > Command Palette.
+3. Select Remote-SSH: Connect to Host.
+4. Choose abdur@100.86.88.47.
+5. Enter the Ubuntu password if requested.
+6. Select File > Open Folder.
+7. Open /home/abdur/CAOS.
+
+The lower-left corner of VS Code should show:
+
+    SSH: 100.86.88.47
+
+
+TERMINAL-ONLY LOGIN
+-------------------
+From the regular Mac Terminal:
+
+    ssh abdur@100.86.88.47
+
+Enter the project directory:
+
+    cd ~/CAOS
+
+Confirm the current directory:
+
+    pwd
+
+Expected output:
+
+    /home/abdur/CAOS
+
+
+2. NORMAL START-OF-WORK ROUTINE
+-------------------------------
+Run these commands before beginning work:
+
+    cd ~/CAOS
+    git switch main
+    git pull --ff-only
+    git status
+
+Meaning:
+- git switch main: Switches to the main branch.
+- git pull --ff-only: Downloads newer GitHub changes without creating an
+  unexpected merge commit.
+- git status: Shows the current branch and changed files.
+
+
+3. SAVE, COMMIT, AND PUSH WORK
+------------------------------
+Check what changed:
+
+    git status
+    git diff
+
+Add one specific file:
+
+    git add path/to/file.c
+
+Add all current changes:
+
+    git add .
+
+Review staged changes:
+
+    git diff --staged
+
+Create a commit:
+
+    git commit -m "Complete Lab 1 checkpoint"
+
+Push the commit to GitHub:
+
+    git push
+
+Normal everyday sequence:
+
+    cd ~/CAOS
+    git pull --ff-only
+    git status
+
+    # Edit and test files.
+
+    git add .
+    git commit -m "Describe the changes"
+    git push
+
+
+4. CREATE AND USE A NEW BRANCH
+------------------------------
+Update main first:
+
+    git switch main
+    git pull --ff-only
+
+Create and enter a new branch:
+
+    git switch -c lab1-work
+
+Confirm the current branch:
+
+    git branch --show-current
+
+After working, save the branch changes:
+
+    git add .
+    git commit -m "Work on Lab 1"
+
+Push a new branch for the first time:
+
+    git push -u origin lab1-work
+
+After the first push, future pushes only require:
+
+    git push
+
+
+RETURN TO AN EXISTING BRANCH
+----------------------------
+List local branches:
+
+    git branch
+
+Switch to main:
+
+    git switch main
+
+Switch to an existing work branch:
+
+    git switch lab1-work
+
+
+5. MERGE FINISHED BRANCH WORK INTO MAIN
+----------------------------------------
+First confirm that the work branch is committed and pushed:
+
+    git switch lab1-work
+    git status
+    git push
+
+Then update main, merge, and push:
+
+    git switch main
+    git pull --ff-only
+    git merge lab1-work
+    git push
+
+Optionally delete the finished local branch:
+
+    git branch -d lab1-work
+
+Optionally delete its GitHub copy:
+
+    git push origin --delete lab1-work
+
+
+6. USEFUL GIT INSPECTION COMMANDS
+---------------------------------
+Show repository status:
+
+    git status
+
+Show local branches:
+
+    git branch
+
+Show local and remote branches:
+
+    git branch -a
+
+Show the current branch:
+
+    git branch --show-current
+
+Show recent commits:
+
+    git log --oneline --graph --decorate -10
+
+Show the remote repository address:
+
+    git remote -v
+
+Show unstaged changes:
+
+    git diff
+
+Show staged changes:
+
+    git diff --staged
+
+
+7. CORRECT COMMON MISTAKES
+--------------------------
+ERROR: fatal: not a git repository
+
+Cause: The terminal is outside the CAOS project directory.
+
+Fix:
+
+    cd ~/CAOS
+
+
+REMOVE A FILE FROM STAGING WITHOUT DELETING IT
+
+    git restore --staged path/to/file.c
+
+
+TEMPORARILY SAVE UNFINISHED CHANGES
+
+    git stash
+
+Restore the saved changes later:
+
+    git stash pop
+
+
+DISCARD UNCOMMITTED MODIFICATIONS
+
+    git restore path/to/file.c
+
+WARNING: This permanently discards uncommitted changes to that file.
+
+
+CHECK GITHUB AUTHENTICATION
+
+    gh auth status
+
+Log in again if necessary:
+
+    gh auth login
+
+
+8. COMPILE AND RUN C PROGRAMS
+-----------------------------
+Compile with warnings treated as errors:
+
+    gcc -Wall -Werror program.c -o program
+
+Run the compiled program:
+
+    ./program
+
+Compile with debugging information:
+
+    gcc -Wall -Werror -g program.c -o program
+
+Run through Valgrind:
+
+    valgrind --leak-check=full ./program
+
+Remove compiled output:
+
+    rm program
+
+Build using a Makefile:
+
+    make
+
+Clean build products when the Makefile supports it:
+
+    make clean
+
+Open the manual page for a C library function:
+
+    man 3 printf
+
+Press q to exit the manual.
+
+
+9. RECOMMENDED BRANCH NAMES
+---------------------------
+Examples:
+
+    lab1-work
+    lab2-work
+    hw1-work
+    mips-practice
+    lecture-examples
+
+
+10. SAFE BRANCH WORKFLOW FOR GRADED WORK
+-----------------------------------------
+Start from an updated main branch:
+
+    git switch main
+    git pull --ff-only
+    git switch -c lab2-work
+
+After working, compiling, and testing:
+
+    git add .
+    git commit -m "Complete Lab 2"
+    git push -u origin lab2-work
+
+Commit frequently at meaningful checkpoints. This provides recoverable versions
+if something breaks later.
+
+
+QUICK REFERENCE
+---------------
+Connect from Mac Terminal:
+
+    ssh abdur@100.86.88.47
+
+Enter the repository:
+
+    cd ~/CAOS
+
+Update before working:
+
+    git switch main
+    git pull --ff-only
+
+Save work:
+
+    git add .
+    git commit -m "Describe the changes"
+    git push
+
+Create a branch:
+
+    git switch main
+    git pull --ff-only
+    git switch -c branch-name
+    git push -u origin branch-name
+
