@@ -14,7 +14,7 @@ Always look at man(ual) pages for functions
 
 /* Check Point 2 write a program that displays a table of data showing the natural logrithm and exponential functions with base e of powers 2 ranging from 2^0 to 2^7 */
 
-/*
+
 #include <stdio.h>
 #include <math.h>
 int x;
@@ -23,25 +23,26 @@ int main(){
 
    double logn, expn;
 
-   printf("                      x\n");
-   printf("  x  ln(x)           e\n");
-   printf("---  --------------  -----------------\n");
-   for (int x = 1; x <= 8; x++){
+   printf("                       x\n");
+   printf("  x  ln(x)            e\n");
+   printf("---  ---------------  ------------------\n");
+   for (int x = 1; x <= 128; x*=2){
       expn = exp(x);
       logn = log(x);
       printf("  %d  %.13f  %.13f\n", x, logn, expn);
    }    
-   printf("---  --------------  -----------------");
+   printf("---  ---------------  ------------------\n");
    return 0;
    
 
 
 }
 
-*/
+
 
 /* Check Point 3*/
 
+/*
 #include <stdio.h>
 #include <math.h>
 
@@ -76,6 +77,9 @@ return 0;
 
    
 
+
+
+*/
 
 
 
