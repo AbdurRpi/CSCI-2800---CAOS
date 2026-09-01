@@ -46,9 +46,31 @@ int main(){
 
 int n;
 
+/*
+void triangle(int n){
+for(int x = n; x >= 1; x--){
+   for(int y = 0; y < n - y - 1; y++){
+         printf("  ");
+   }
+      for(int z = 0; z < (2 * x - 1); z++){
+         printf("^");
+      }
+         printf("\n");
+   }
+   }
+*/
 
-void triangle(int n);
-   for(
+void triangle(int n){
+   for(int l = snprintf(NULL, 0, "%d", n) > 0; l--;){
+      for(int s = 0; s < n - l; s++){
+          printf(" ");
+
+         //for(t < l; t < 2 *l;){
+         printf("^");
+      }
+      }
+         printf("\n");
+   }
 
 int main(void){
 
@@ -57,9 +79,9 @@ int main(void){
 while(n != -999){
    printf("Enter positive integer (-999 to exit): \n");
    scanf("%d", &n);
-   if(n == (n%2 == 0)){
-      
-      printf("%d\n", n);
+   if(n%2 != 0){
+      triangle(n);
+      //printf("%d\n", n);
    }else{
       printf("ERROR - TRY AGAIN!\n");   
 }
