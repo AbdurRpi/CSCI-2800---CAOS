@@ -16,6 +16,17 @@ int x;
 
 int main(){
 
+   double logn, expn;
+
+   printf("                      x");
+   printf("  x  ln(x)           e");
+   printf("---  --------------  -----------------");
+   for (int x = 0; x <= 7; x++)
+      expn = exp(x);
+      logn = log(expn);
+      printf(" %d  %.13f           %.13f");
+   printf("---  --------------  -----------------");
+
    
 
 
