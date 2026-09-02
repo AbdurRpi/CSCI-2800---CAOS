@@ -14,7 +14,7 @@ Always look at man(ual) pages for functions
 
 /* Check Point 2 write a program that displays a table of data showing the natural logrithm and exponential functions with base e of powers 2 ranging from 2^0 to 2^7 */
 
-/*
+
 #include <stdio.h>
 #include <math.h>
 int x;
@@ -26,10 +26,10 @@ int main(){
    printf("                       x\n");
    printf("  x  ln(x)            e\n");
    printf("---  ---------------  ------------------\n");
-   for (int x = 1; x <= 128; x*=2){
+   for (int x = 1; x <= 256; x*=2){
       expn = exp(x);
       logn = log(x);
-      printf("  %d  %.13f  %.13f\n", x, logn, expn);
+      printf("%3d  %.13f  %.13f\n", x, logn, expn);
    }    
    printf("---  ---------------  ------------------\n");
    return 0;
@@ -37,16 +37,16 @@ int main(){
 
 
 }
-*/
+
 
 /* Check Point 3*/
-
+/*
 #include <stdio.h>
 #include <math.h>
 
 int n;
 
-/*
+
 void triangle(int n){
 for(int x = n; x >= 1; x--){
    for(int y = 0; y < n - y - 1; y++){
@@ -59,7 +59,7 @@ for(int x = n; x >= 1; x--){
    }
    }
 */
-
+/*
 void triangle(int n){
    for(int r = 0; r < (n+1) / 2; r++){
       for(int s = 0; s < r ; s++){
@@ -80,7 +80,7 @@ int main(void){
 while(n != -999){
    printf("Enter positive integer (-999 to exit): \n");
    scanf("%d", &n);
-   if(n%2 != 0){
+   if(n%2 != 0 && n%2 > 0){
       triangle(n);
       //printf("%d\n", n);
    }else{
@@ -97,3 +97,5 @@ return 0;
 
 
 
+
+*/
