@@ -61,16 +61,17 @@ for(int x = n; x >= 1; x--){
 */
 
 void triangle(int n){
-   for(int l = snprintf(NULL, 0, "%d", n) > 0; l--;){
-      for(int s = 0; s < n - l; s++){
+   for(int r = 0; r < (n+1) / 2; r++){
+      for(int s = 0; s < r ; s++){
           printf(" ");
-
-         //for(t < l; t < 2 *l;){
+      }
+      for (int c = 0; c < n -2*r; c++){
          printf("^");
       }
+      printf("\n");
       }
-         printf("\n");
-   }
+      
+}
 
 int main(void){
 
