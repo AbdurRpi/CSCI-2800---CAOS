@@ -1,12 +1,7 @@
-/* command-line-args.c */
-/*
-Bash$ gcc -Wall -Werror lecture2.c
-Bash$ gcc -Wall -Werror lecture2.c -lm
-Bash$ gcc -E -Wall -Werror lecture2.c <== preprocessor only
-*/
+/* command-line-args-v2.c */
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
                  /* char * argv[] */
 int main( int argc, char ** argv )
@@ -26,22 +21,33 @@ int main( int argc, char ** argv )
   printf( "argv[3] is %s\n", argv[3] );   /* argv + 3 */
   printf( "argv[argc] is %s\n", argv[argc] );   /* always NULL */
 
-  /* Write a loop to print out all command line argunemts*/
-for (int i = 0 ; i < argc; i++){
-   printf("argv[%d] is %s\n", i, argv[i]);
-}
-/* In C, lets get rid if the use of argc*/
-for (int i = 0; *(argv + i); i++){ /* No need for Null in condition*/
-   printf("argv[%d] is %s\n", i argv[i]); /* argv + i*/
-}
-/* Rewrite this loop without using argv and without using int variable*/
-for (char **ptr = argv; *ptr != NULL; i++){
-   printf( "next argument is %s\n", *ptr);
-}
+  /* write a loop to print out all of the command-line arguments... */
+  for ( int i = 0 ; i < argc ; i++ )
+  {
+    printf( "argv[%d] is %s\n", i, argv[i] );   /* argv + i */
+  }
 
-/* ptr++ ==> ptr = ptr + 1 ==> ptr = ptr + 1 x sizeof( char * )*/
+  /* in C, let's get rid of the use of argc... */
+  for ( int i = 0 ; *(argv + i) != NULL ; i++ )
+  {
+    printf( "argv[%d] is %s\n", i, argv[i] );   /* argv + i */
+  }
 
-/* TO DO: us pointer arithmetic and some math to determine which index we are at  ie. 0, 1, 2*/
+  /* in C, let's get rid of the use of argc... */
+  for ( int i = 0 ; *(argv + i) ; i++ )  /* no need for != NULL in condition */
+  {
+    printf( "argv[%d] is %s\n", i, argv[i] );   /* argv + i */
+  }
+
+  /* rewrite this loop without using argc and without using int variable... */
+  for ( char ** ptr = argv ; *ptr ; ptr++ )
+  {
+    printf( "next argument is %s\n", *ptr );
+    /* TO DO: use pointer arithmetic and some math to determine */
+    /*         which index we are at, i.e., 0, 1, 2, ...        */
+  }
+
+  /*  ptr++  ==>  ptr = ptr + 1  ==>  ptr = ptr + 1 x sizeof( char * )  */
 
   return EXIT_SUCCESS;
 }
