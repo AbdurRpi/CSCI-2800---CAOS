@@ -70,15 +70,14 @@ return EXIT_SUCCESS;
 
 int main(){
    size_t capacity = 16;
-   //size_t o_capacoty = capacity;
+   
    char *buffer = calloc(capacity, sizeof(char));
    if (buffer == NULL){perror("calloc() failed");
       return EXIT_FAILURE;
    }
-      
    int count = 0;
    int c;
-   while(count < capacity){
+   while(1){
        int duplicate = 0;
       c = fgetc(stdin);
       if (c == EOF){
@@ -97,6 +96,16 @@ int main(){
             duplicate = 1;
          }
       if (isalnum(c)){
+         if(count == capacity){
+            size_t o_capacity = capacity;
+            capacity = capacity + 16;
+            buffer = realloc(buffer, (capacity) * sizeof(char));
+            if (buffer == NULL){
+               perror("realloc failed");
+               return EXIT_FAILURE;
+            }
+            memset(buffer + o_capacity, 0, capacity - o_capacity);
+         }
          *(buffer + count) = (char) c;
          count++;
       }
