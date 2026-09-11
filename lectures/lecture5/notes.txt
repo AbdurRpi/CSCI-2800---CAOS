@@ -1,0 +1,19 @@
+Number formats (integers)
+
+sizeof char is 1
+sizeof short is 2
+sizeof int is 4
+sizeof long is 8
+
+size of char is 1 byte --- range of values: -128 to 127 ( 256 possible values)
+
+unsigned char is a byte --- range of values: 0..255 (256 possible values)
+            ^
+      signed vale    
+2^8 = 256
+
+FUTURE QUIZ QUESTION :
+combine binary values to base 10
+      0011 0110
+
+      
