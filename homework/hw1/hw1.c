@@ -11,11 +11,11 @@ Bash$ gcc -E -Wall -Werror lecture2.c <== preprocessor only
 
 int main(){
    
-   float value;
+   float value; // value for input
    //char *v = value;
-   int *size;
-   int *index;
-   float **cache;
+   int *size; // size of array
+   int *index; // index of the array
+   float **cache; // array of char cache
 
    cache = calloc(64, sizeof(float *));
    if(cache == NULL) {perror("ERROR: calloc() failed"); return EXIT_FAILURE;}
@@ -26,12 +26,12 @@ int main(){
    atoi(size);
    scanf("%f", &value);
 
-   while(value != "CTRL-D"){
-      for (*size = size; *size/abs(value); size++){
-         size/abs(value) = index
-         (*(*cache + 3) + index);
+   while(value != "CTRL-D"){ // If ctrl-d is entered cut program
+      for (*size = size; *size/abs(value); size++){ // attempting to calculate hash value
+         size/abs(value) = index //once hash value is determined then put that into index
+         (*(*cache + 3) + index); // then add the index to the address of the second layer of the array
       }
-      for (char **cache = cache; *cache != NULL; cache++ ){
+      for (char **cache = cache; *cache != NULL; cache++ ){ // attempting to print front command line example 
          printf("Value %s hashes to index %d (calloc)\n", value, index);
       }
    }
