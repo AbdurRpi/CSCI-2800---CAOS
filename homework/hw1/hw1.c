@@ -14,15 +14,23 @@ int main(int argc, char **argv){
    
    float value; // value for input
    //char *v = value;
-   int size = atoi(*(argv +1)); // size of array
+   int size; // size of array
    int index; // index of the array
    float **cache; // array of char cache
 
+   if (argc != 2){
+      fprintf(stderr, "ERROR: expected one cache size argument\n");
+      return EXIT_FAILURE;
+   }
+   size = atoi(*(argv +1));
+
+   if (size <= 0){
+      fprintf(stderr, "ERROR: cache size must be positive\n");
+      return EXIT_FAILURE;
+   }
+
    cache = calloc(size, sizeof(float *));
    if(cache == NULL) {perror("ERROR: calloc() failed"); return EXIT_FAILURE;}
-
-   *(cache + 1) = realloc(index, sizeof(size));
-   if(*(cache +1) == NULL) {perror("ERROR: calloc() layer 2 allocation failed"); return EXIT_FAILURE;}
 
    int *counts = calloc(size, sizeof(int));
    printf("Enter floating-point values below (CTRL-D to end).\n");
@@ -30,32 +38,78 @@ int main(int argc, char **argv){
 
    while(1){ // If ctrl-d is entered cut program
       int result = scanf("%f", &value);
+      int fpos = -1;
+      index = abs((int)value) % size;
       if (result == EOF){
          break;
       }
       if ( result == 0){
-         int fgetc(result);
+         char buffer[1024];
+         if(fgets(buffer, sizeof(buffer), stdin) == NULL){
+            break;
+         }
          continue;
       }
-      for (counts == 0 ; counts <= *(*(cache + 1)+ 3); counts ++){ 
-         index = value % size;// counts if counts is less than 3 spaces on the second layer of the arrays elements
-         for(argv > 0; *(*(cache + 1) + argv) < *(*(cache + 1) + *(argv)); index++){. // attempting to reorder the indexes from greatest to least 
-            if ((*(*cache + 1) + argv) <= *(*(cache + 1)+ index)){
-
-
-         } 
-         
-      
+      for ((int pos = 0); pos < *(counts + index); pos ++){
+         if ((*(*cache + index) + pos) == value){
+            fpos = pos;
+            break;
          }
       }
-      float *order = realloc(*(cache +index), (*(counts + index)*sizeof(float)));
-      if (order == NULL) {perror("Error: realloc() failed");
+      if (fpos != -1){
+         if (fpos == *(*(counts + index)- 1)){
+               printf("Value %.3f Hashes to index %d (nop)/n ", value, index);
+         } else{ // Reorder Function
+            float lops = *(*(cache + index)+ fpos);
+            for (int pos = fpos; pos < *(*(counts + index)-1); pos++){
+               *(*cache + index) + pos = *(*cache + index) +(pos + 1);
+            }
+            *(*cache + index) + (*(*counts + index)- 1) = lops
+         }
+      }else if (*(counts + index) == 0){ //calloc function
+         *(cache + index) = calloc(1, sizeof(float));
+         *(*(cache + index)+ 0) = value;
+         *(counts + index) = 1;
+      }else if (*(couns + index) < 3){ // Realloc function
+         float *order = realloc(*(cache + index), (*(counts + 1) *sizeof(float)));
+         if (order == NULL) {
+            perror("Error: realloc() failed\n");
+            free(*(cache + index));
+            return EXIT_FAILURE;
+         }
+         *(cache + index) = temp;
+         *(*(cache + index) + count) = value;
+         *(cache + index) ++;
+      }else { // shift position function
+         for (int pos = 0; pos < 2; pos ++){
+            *(*(cache + index)+ pos) = *(*(cache + index)+ (pos +1));
+         }
+         *(*(cache + index)+2) = value;
+      }
+
+      }
+   #if 0
+      for (counts == 0 ; counts <= *(*(cache + 1)+ 3); counts ++){ 
+         index = value % size;// counts if counts is less than 3 spaces on the second layer of the arrays elements
+         
+            printf("Value %3.3d Hashes to index %d (calloc)/n ");
+         }
+         for(index > 0; *(*(cache + 1) + index) < *(*(cache + 1) + *(index)); index++){. // attempting to reorder the indexes from greatest to least 
+            if ((*(*cache + 1) + index) <= *(*(cache + 1)+ index)){
+         } 
          for(int i = 0; i < size; i++){
             free((*(cache + i)));
          }
       }
-      for ()
-   }
+      #endif
+         free(*(counts));
+         free(cache);
+         return EXIT_SUCCESS;
+   
+         }
+         
+}
+      
       #if 0
       for (*size = size; *size/abs(value); size++){ // attempting to calculate hash value
          size/abs(value) = index //once hash value is determined then put that into index
@@ -66,9 +120,6 @@ int main(int argc, char **argv){
       }
    }
    #endif
-   free(*(counts));
-free(cache);
-   return EXIT_SUCCESS;
-}
+   
 
 
