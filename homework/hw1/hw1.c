@@ -21,11 +21,11 @@ int main(int argc, char **argv){
    cache = calloc(size, sizeof(float *));
    if(cache == NULL) {perror("ERROR: calloc() failed"); return EXIT_FAILURE;}
 
-   *(cache + 3) = realloc(index, sizeof(size));
-   if(*(cache +3) == NULL) {perror("ERROR: calloc() layer 2 allocation failed"); return EXIT_FAILURE;}
+   *(cache + 1) = realloc(index, sizeof(size));
+   if(*(cache +1) == NULL) {perror("ERROR: calloc() layer 2 allocation failed"); return EXIT_FAILURE;}
 
    int *counts = calloc(size, sizeof(int));
-   printf("Enter floating-point values below (CTRL-D to end).");
+   printf("Enter floating-point values below (CTRL-D to end).\n");
    
 
    while(1){ // If ctrl-d is entered cut program
@@ -37,15 +37,25 @@ int main(int argc, char **argv){
          int fgetc(result);
          continue;
       }
-      for (){
+      for (counts == 0 ; counts <= *(*(cache + 1)+ 3); counts ++){ 
+         index = value % size;// counts if counts is less than 3 spaces on the second layer of the arrays elements
+         for(argv > 0; *(*(cache + 1) + argv) < *(*(cache + 1) + *(argv)); index++){. // attempting to reorder the indexes from greatest to least 
+            if ((*(*cache + 1) + argv) <= *(*(cache + 1)+ index)){
 
+
+         } 
+         
+      
+         }
       }
       float *order = realloc(*(cache +index), (*(counts + index)*sizeof(float)));
       if (order == NULL) {perror("Error: realloc() failed");
          for(int i = 0; i < size; i++){
-            free(cache[i]);
+            free((*(cache + i)));
          }
       }
+      for ()
+   }
       #if 0
       for (*size = size; *size/abs(value); size++){ // attempting to calculate hash value
          size/abs(value) = index //once hash value is determined then put that into index
@@ -56,10 +66,9 @@ int main(int argc, char **argv){
       }
    }
    #endif
-   
-}
-free(*(counts));
+   free(*(counts));
 free(cache);
    return EXIT_SUCCESS;
-
 }
+
+
