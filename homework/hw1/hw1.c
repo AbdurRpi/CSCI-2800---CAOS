@@ -53,14 +53,14 @@ int main(int argc, char **argv){
       index = abs((int)value) % size;
 
       for (int pos = 0; pos < *(counts + index); pos ++){
-         if ((*(*cache + index) + pos) == value){
+         if (*(*(*cache + index) + pos) == value){
             fpos = pos;
             break;
          }
       }
       if (fpos != -1){
          if (fpos == *(counts + index) - 1){
-               printf("Value %.3f Hashes to index %d (nop)\n ", value, index);
+               printf("Value %.3f hashes to index %d (nop)\n ", value, index);
          } else{ // Reorder Function
             float lpos = *(*(cache + index)+ fpos); // Last position (lops) to reference a move off of 
             for (int pos = fpos; pos < *(counts + index)-1 ; pos++){
@@ -114,7 +114,7 @@ int main(int argc, char **argv){
    
          }
          
-}
+
       
       #if 0
       for (*size = size; *size/abs(value); size++){ // attempting to calculate hash value
