@@ -38,8 +38,6 @@ int main(int argc, char **argv){
 
    while(1){ // If ctrl-d is entered cut program
       int result = scanf("%f", &value);
-      int fpos = -1;
-      index = abs((int)value) % size;
       if (result == EOF){
          break;
       }
@@ -50,41 +48,49 @@ int main(int argc, char **argv){
          }
          continue;
       }
-      for ((int pos = 0); pos < *(counts + index); pos ++){
+
+      int fpos = -1;
+      index = abs((int)value) % size;
+
+      for (int pos = 0; pos < *(counts + index); pos ++){
          if ((*(*cache + index) + pos) == value){
             fpos = pos;
             break;
          }
       }
       if (fpos != -1){
-         if (fpos == *(*(counts + index)- 1)){
-               printf("Value %.3f Hashes to index %d (nop)/n ", value, index);
+         if (fpos == *(counts + index) - 1){
+               printf("Value %.3f Hashes to index %d (nop)\n ", value, index);
          } else{ // Reorder Function
-            float lops = *(*(cache + index)+ fpos);
-            for (int pos = fpos; pos < *(*(counts + index)-1); pos++){
-               *(*cache + index) + pos = *(*cache + index) +(pos + 1);
+            float lpos = *(*(cache + index)+ fpos); // Last position (lops) to reference a move off of 
+            for (int pos = fpos; pos < *(counts + index)-1 ; pos++){
+               (*(*(cache + index) + pos) = *(*cache + index) + (pos + 1));
             }
-            *(*cache + index) + (*(*counts + index)- 1) = lops
+            *(*(cache + index) + (*(*counts + index) - 1)) = lpos;
+            printf("Value %.3f hashes to index %d (reorder)\n", value, index);
          }
       }else if (*(counts + index) == 0){ //calloc function
          *(cache + index) = calloc(1, sizeof(float));
          *(*(cache + index)+ 0) = value;
          *(counts + index) = 1;
-      }else if (*(couns + index) < 3){ // Realloc function
-         float *order = realloc(*(cache + index), (*(counts + 1) *sizeof(float)));
+         printf("Value %.3f hashes to index %d (calloc)\n", value, index);
+      }else if (*(counts + index) < 3){ // Realloc function
+         float *order = realloc(*(cache + index), (*(counts + index)+ 1 ) * sizeof(float));
          if (order == NULL) {
             perror("Error: realloc() failed\n");
-            free(*(cache + index));
+            free((*(cache + index)));
             return EXIT_FAILURE;
          }
-         *(cache + index) = temp;
-         *(*(cache + index) + count) = value;
-         *(cache + index) ++;
+         *(cache + index) = order;
+         *(*(cache + index) + *(counts + index)) = value;
+         (*(cache + index))++;
+         printf("Value %.3f hashes to index %d (realloc)\n", value, index);
       }else { // shift position function
          for (int pos = 0; pos < 2; pos ++){
             *(*(cache + index)+ pos) = *(*(cache + index)+ (pos +1));
          }
          *(*(cache + index)+2) = value;
+         printf("Value %.3f hashes to index %d (shift)\n", value, index);
       }
 
       }
