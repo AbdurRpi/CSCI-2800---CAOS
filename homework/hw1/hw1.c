@@ -43,12 +43,16 @@ int main(int argc, char **argv){ // using argc and argv for command line
          break;
       }
       if ( result == 0){
-         char buffer[2]; // Checking for invalid characters and moving along with inputs
-         if(fgets(buffer, sizeof(buffer), stdin) == NULL){
-            break;
+         //char buffer[2]; // Checking for invalid characters and moving along with inputs
+         //if(fgets(buffer, sizeof(buffer), stdin) == NULL){
+         int buffer = fgetc(stdin);
+         if (buffer == EOF){
+             break;
          }
-         continue;
-      }
+           continue;
+         }
+         
+      
 
       int fpos = -1;
       index = abs((int)value) % size; // checks the remainder for indexing below
@@ -61,7 +65,7 @@ int main(int argc, char **argv){ // using argc and argv for command line
       }
       if (fpos != -1){
          if (fpos == *(counts + index) - 1){
-               printf("Value %.3f hashes to index %d (nop)\n ", value, index);
+               printf("Value %.3f hashes to index %d (nop)\n", value, index);
          } else{ // Reorder Function
             float lpos = *(*(cache + index)+ fpos); // Last position (lops) to reference a move off of 
             for (int pos = fpos; pos < *(counts + index)-1 ; pos++){
@@ -95,6 +99,20 @@ int main(int argc, char **argv){ // using argc and argv for command line
       }
       
 
+      } // Function to print out the rest of the arrays after completion
+      for (int i = 0; i < size; i++){
+         if(*(counts + i) > 0){
+            printf("[%d] ==> ", i);
+
+            for (int j = 0; j < *(counts + i); j++){
+               if(j == 0){
+                  printf("%.3f", *(*(cache + i + j)));
+               } else{
+                  printf(", %.3f", *(*(cache + i) + j));
+               }
+            }
+            printf("\n");
+         }
       }
    #if 0 
    JUST old testing code that didnt work :(
