@@ -38,7 +38,7 @@ int main(int argc, char **argv){ // using argc and argv for command line
    
 
    while(1){ // input valudation
-      int result = scanf("%f", &value);
+      int result = scanf("%f", &value); 
       if (result == EOF){
          break;
       }
@@ -68,8 +68,8 @@ int main(int argc, char **argv){ // using argc and argv for command line
                printf("Value %.3f hashes to index %d (nop)\n", value, index);
          } else{ // Reorder Function
             float lpos = *(*(cache + index)+ fpos); // Last position (lops) to reference a move off of 
-            for (int pos = fpos; pos < *(counts + index)-1 ; pos++){
-               *(*(cache + index) + pos) = *(*(cache + index) + pos) + (pos + 1);
+            for (int pos = fpos; pos < *(counts + index) - 1 ; pos++){
+               *(*(cache + index) + pos) = *(*(cache + index) + (pos + 1));
             }
             *(*(cache + index) + (*(counts + index) - 1)) = lpos;
             printf("Value %.3f hashes to index %d (reorder)\n", value, index);
@@ -106,7 +106,7 @@ int main(int argc, char **argv){ // using argc and argv for command line
 
             for (int j = 0; j < *(counts + i); j++){
                if(j == 0){
-                  printf("%.3f", *(*(cache + i + j)));
+                  printf("%.3f", *(*(cache + i) + j));
                } else{
                   printf(", %.3f", *(*(cache + i) + j));
                }
