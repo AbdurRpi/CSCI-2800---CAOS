@@ -53,7 +53,7 @@ int main(int argc, char **argv){
       index = abs((int)value) % size;
 
       for (int pos = 0; pos < *(counts + index); pos ++){
-         if (*(*(*cache + index) + pos) == value){
+         if (*(*(cache + index) + pos) == value){
             fpos = pos;
             break;
          }
@@ -64,9 +64,9 @@ int main(int argc, char **argv){
          } else{ // Reorder Function
             float lpos = *(*(cache + index)+ fpos); // Last position (lops) to reference a move off of 
             for (int pos = fpos; pos < *(counts + index)-1 ; pos++){
-               (*(*(cache + index) + pos) = *(*cache + index) + (pos + 1));
+               *(*(cache + index) + pos) = *(*cache + index) + (pos + 1);
             }
-            *(*(cache + index) + (*(*counts + index) - 1)) = lpos;
+            *(*(cache + index) + (*(counts + index) - 1)) = lpos;
             printf("Value %.3f hashes to index %d (reorder)\n", value, index);
          }
       }else if (*(counts + index) == 0){ //calloc function
@@ -83,7 +83,7 @@ int main(int argc, char **argv){
          }
          *(cache + index) = order;
          *(*(cache + index) + *(counts + index)) = value;
-         (*(cache + index))++;
+         (*(counts + index))++;
          printf("Value %.3f hashes to index %d (realloc)\n", value, index);
       }else { // shift position function
          for (int pos = 0; pos < 2; pos ++){
@@ -92,6 +92,7 @@ int main(int argc, char **argv){
          *(*(cache + index)+2) = value;
          printf("Value %.3f hashes to index %d (shift)\n", value, index);
       }
+      
 
       }
    #if 0
@@ -108,7 +109,10 @@ int main(int argc, char **argv){
          }
       }
       #endif
-         free(*(counts));
+      for (int i = 0; i < size; i++){
+         free(*(cache + i));
+      }
+         free(counts);
          free(cache);
          return EXIT_SUCCESS;
    
