@@ -4,7 +4,7 @@ Bash$ gcc -Wall -Werror lecture2.c -lm
 Bash$ gcc -E -Wall -Werror hw1.c <== preprocessor only
 */
 
-/* I used pointer arithmetic instead of [ ] so some functions look big */
+/* I used pointer arithmetic instead of [ ] so some functions look big  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
