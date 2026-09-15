@@ -1,0 +1,17 @@
+Leb not required that day
+Crib sheet one double sided page 8.5x11
+Questions will be multuple choice, some short/ longer asnwer questions
+Check back exams and quizes for material prep
+Exam 1 topics:
+Everything through friday chapter 1-8 C and AD^2 Ch 3 and 4
+
+static Vs dynamic memory allocation (how many bytes) and size of operators
+sizeof opertors
+dynamically allocated two layer structure, commadn line args.c
+pointers and pointer arithmatic ( no square bracket)
+integer data type representation -- twos complement
+base convertions (hexadecinaml, decimal, octal, binary)
+printf and format string
+scanf() and fgetc()
+preprocessor # define #ifdef #if0 #if 1 #endif #include
+fork(), waitpid(), and prcoess creation (from today)
