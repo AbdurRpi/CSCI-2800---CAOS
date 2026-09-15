@@ -1,5 +1,5 @@
 /* compile via:
-Bash$ gcc -Wall -Werror simple.c
+Bash$ gcc -Wall -Werror check2.c
 Bash$ gcc -E -wall -werror simple.c <== preprocessor 
 */
 
@@ -8,26 +8,61 @@ Bash$ gcc -E -wall -werror simple.c <== preprocessor
 #include <unistd.h>
 #include <string.h>
 #include <stdarg.h>
-#include <limits.h>
+#include <fcntl.h>
+#include <ctype.h>
 
+#if 0
 void finder(char n){
-   if (n <= 1){
-      return n;
+   for(n)
    }
    return fibn(n -1) + fibn(n - 2);
       }
-int main(){
-   int i;
-   //int INT;
-   //long LONG;
+#endif
+int main(int argc, char **argv){
 
-   **cache = 
-
-   printf("This program calculates fib(n).");
-
-while(1){
-   printf("Enter n (or -1 to exit): \n");
    
+   
+   if (argc != 2){ 
+      fprintf(stderr, "ERROR: expected argument\n");
+      return EXIT_FAILURE;
+   }
+
+   int fd = open(*(argv + 1), O_RDONLY);
+
+   if(fd == -1){
+      perror("ERROR: open() failed");
+      return EXIT_FAILURE;
+   }
+   signed char byte;
+   ssize_t br;
+
+   
+   
+   while((br = read(fd, &byte, 1)) > 0){
+      unsigned int c = (unsigned char)byte;
+      if (byte == '\n'){
+         printf("Char '\\n' ==> decimal %d; octal 0%o; hex 0x%x\n",(int)byte, c, c);
+
+      }else if(isprint((unsigned char)byte)){
+         printf("Char '%c' ==> decimal %d; octal 0%o; hex 0x%x\n", byte, (int)byte, c, c);
+     
+      }else{
+         printf("Char 'non-printable' ==> decimal %d; octal 0%o; hex 0x%x\n",(int)byte, c, c);
+      }
+      
+   
+}
+if (br == -1){
+         perror("ERROR: open() failed");
+      return EXIT_FAILURE;
+      }
+      if ((close(fd))== -1){
+         perror("ERROR: open() failed");
+      return EXIT_FAILURE;
+   }
+return EXIT_SUCCESS;
+}
+ #if 0
    if(scanf("%d", &i) != 1){
       perror("Error: invalid input\n");
       return EXIT_FAILURE;
@@ -39,26 +74,10 @@ while(1){
    if ( i < 0){
       continue;
    }
-   printf("Using unsigned int, fib(%d) is %u.\n", i, fibn((unsigned int )i));
-   printf("Using unsigned long, fib(%d) is %lu.\n", i, fibl((unsigned int )i));
+   #endif
+   //printf("Char %c ==> decimal %d; octal %o; hex %x", chars, chars, chars, chars);
+   //printf("Using unsigned long, fib(%d) is %lu.\n", i, fibl((unsigned int )i));
 
-}
-return EXIT_SUCCESS;
-}
-/*
-What is the range of valid values for unsigned int and unsigned long?
 
-for unsigned int valid range is 0 - 4,294,967,295 of 32 bit size
-
-for unsigned long valid range is 0 - 18,446,744,073,709,551,615 of 64 bit size
-
-Why does it take such a long time to compute larger values?
-
-It takes longer because each Fibonacci call creates two more 
-recursive calls and repeatedly recalculates the same earlier 
-values. As the input grows, the number of calls increases 
-exponentially, requiring dramatically more computation.
-
-*/
 
 
