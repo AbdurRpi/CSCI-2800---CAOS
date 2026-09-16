@@ -55,7 +55,7 @@ What is the range of valid values for unsigned int and unsigned long?
 
 for unsigned int valid range is 0 - 4,294,967,295 of 32 bit size
 if it was signedsigned  2,147,565,545
-F(42)
+F(47)
 
 for unsigned long valid range is 0 - 18,446,744,073,709,551,615 of 64 bit size
 
