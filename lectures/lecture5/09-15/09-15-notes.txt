@@ -1,0 +1,94 @@
+[09/15/2026]
+
+No office hours today 4-6PM....
+
+Rainbow Grades is now active
+-- any discrepancies/errors, please email me (goldsd3@rpi.edu)
+
+Quiz 1
+-- grade inquiry window open today at 12:00PM
+-- (submit, if need be, by Saturday 12:00PM)
+
+Exam 1
+-- Exam 1 is 4:00-5:50PM slot on Wed Sep 23
+-- Labs on Wed Sep 23 are optional office hours
+    (you can go to any/all of the labs...)
+-- Cribsheet -- YES -- one double-sided or two single-sided 8.5"x11"
+    (anything you want on the cribsheet; feel free to collaborate)
+-- Question: multiple choice, some short/longer answer
+-- I will post some back exams...
+-- Exam 1 topics (everything through Fri Sep 18):
+---- static vs dynamic memory allocation (e.g., how many bytes...?)
+---- * and & operators
+---- sizeof operator
+---- dynamically allocated two-layer structure, e.g., command-line-args.c
+---- pointers and pointer arithmetic (no square brackets...)
+---- integer data type representation -- two's complement
+---- base conversions (hexadecimal, decimal, octal, binary)
+---- printf() and format string
+---- scanf() and fgetc()
+---- preprocessor #define #ifdef #if 0 #if 1 #endif #include
+---- fork(), waitpid(), and process creation...(START TODAY)
+
+
+Quiz 1:
+
+Q1
+   BEFORE       char *
+               +------+
+    q1 --> [0] | NULL |
+               +------+
+           [1] | NULL |
+               +------+
+           [2] | NULL |       [0] ....... [12]
+               +------+      +----------------+
+           [3] |  =========> | C++2010SIX8\0  |
+               +------+      +----------------+
+           [4] | NULL |        C2011SIXTY8\0
+               +------+            ^    ^
+                 ...              [4]  [9]
+               +------+
+    [9] or [10]| NULL |
+               +------+
+
+   AFTER        char *
+               +------+
+    q1 --> [0] | NULL |       [0] ....... [12]
+               +------+      +----------------+
+           [1] | NULL |      |  C........8    |
+               +------+      +----------------+
+           [2] | NULL |       [0] ... [6]
+               +------+      +-----------+ 
+           [3] |  =========> |  Q1Q2Q3   |
+               +------+      +-----------+
+           [4] | NULL |         Q3Q2Q1
+               +------+
+                 ...
+               +------+
+    [9] or [10]| NULL |
+               +------+
+
+
+   AFTER
+   both free()                [0] ....... [12]
+    calls...                 +----------------+
+                             |  C........8    |
+                             +----------------+
+
+Q2
+
+   BEFORE       char *
+               +------+
+    q1 --> [0] | NULL |
+               +------+
+           [1] | NULL |       [0] [1] [2] [3] [4] [5] [6] [7] [8] ...
+               +------+      +----------------------------------------+
+           [2] |  =========> | 7 | 6 | E | R | S |\0 | $ | ! |???|????|
+               +------+      +----------------------------------------+
+           [3] | NULL |                           ^^^
+               +------+                         EOS (end-of-string)
+                 ...                             zero byte
+               +------+
+           [21]| NULL |
+               +------+
+
