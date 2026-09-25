@@ -1,0 +1,70 @@
+[09/22/2026]
+
+Q2
+
+            PARENT: x is 2222
+            /               \
+           /                 \
+====<parent>====        ====<child>====
+PARENT 800: forked...   PARENT 0: forked...
+PARENT 777: child...    CHILD: happy b...
+PARENT: 222             CHILD: 2240
+================        ===============
+
+
+Q3
+  -- static allocations; how many bytes?
+      (compile-time; on the stack)
+
+    variable bytes
+    -------- -----
+           a   8
+           b   8
+           c   8
+           d   8
+           e   4
+           f   8
+           g   8
+           h   8
+
+  -- dynamic allocations; how many bytes?
+      (runtime heap)
+
+        100 + 800 + 20 + 4 ==> 924 bytes
+
+
+
+
+Q6 --- seg-faults...
+
+   char * x = NULL;
+   *x = 'A';            /* dereference a NULL pointer */
+
+
+   int * y = calloc( 1234, sizeof( int ) );
+   ...
+   *(y + 1000000) = 9999;   /* very likely seg-fault... */
+         ^^^^^^^
+          some large enough value...
+   ...
+   free( y );
+   *(y + 100) = 5678;   /* likely no seg-fault here */
+
+
+
+   char * z = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+   *(z + 5) = '!';  /* seg-fault -- cannot change read-only */
+
+
+
+Q7
+
+  int f( int y )
+  {
+    int * x = malloc( sizeof( int ) );
+    *x = y;
+
+    return *x;
+  } /* memory leak occurs when we leave this function... */
+
+
