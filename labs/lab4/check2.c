@@ -42,48 +42,28 @@ int main(int argc, char **argv)
       files_processed++;
 
       char buffer[4096];
-      ssize_t bytes_read;
+      int bytes_read;
 
-      while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0)
-      {
-         for (ssize_t j = 0; j < bytes_read; j++)
-         {
+      while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0){
+         for (int j = 0; j < bytes_read; j++){
             unsigned char c = (unsigned char)buffer[j];
-
-            if (isupper(c))
-            {
+            if (isupper(c)){
                uppercase++;
-            }
-
-            if (islower(c))
-            {
+            }if (islower(c)){
                lowercase++;
-            }
-
-            if (isdigit(c))
-            {
+            }if (isdigit(c)){
                digits++;
-            }
-
-            if (ispunct(c))
-            {
+            }if (ispunct(c)){
                punctuation++;
-            }
-
-            if (c == '\n')
-            {
+            }if (c == '\n'){
                lines++;
             }
          }
       }
 
-      if (bytes_read == -1)
-      {
+      if (bytes_read == -1){
          perror("read() failed");
-      }
-
-      if (close(fd) == -1)
-      {
+      }if (close(fd) == -1){
          perror("close() failed");
       }
    }
