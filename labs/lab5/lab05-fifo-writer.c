@@ -1,4 +1,7 @@
 /* Checkpoint 2: run in a separate terminal from the reader. */
+
+/* gcc -Wall -Werror lab05-fifo-writer.c -o lab05-fifo-writer.out */
+
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
