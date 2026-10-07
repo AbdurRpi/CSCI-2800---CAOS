@@ -1,0 +1,49 @@
+Command Line argumens 
+cannot use FILE
+cannot use malloc() or memset()
+1st command line
+use open() read() close()
+
+2nd command line
+
+make a FIFO to read candidate words
+
+make another FIFO so that it can read result of the spell check
+open the FIFO's for reading first before writing
+
+ Create a trie tree structture 
+
+ 1 over arching Array 
+ | A | B | C | D | E | F | G | H | I | J | K | ...
+
+ (which is)  0 1
+[0....26]   [A][B]
+Then for each Letter create a seperate Array for that too 
+
+a struct 
+
+so for A (0) if would be [B,C,D,E]
+
+once tried structure is created then open each FIFO with open()
+and read() write() when necesarry
+
+Interprocess requirement
+
+use the first FIFO to handle processing the Candidate word
+Call Fork () let the child process handle and write to the second FIFO
+which is there to handle the spell checker
+
+If the candidate word is valid  send the word back on the FIFO with a period
+EX. if word is "CAOS" write "CAOS." back to FIFO
+
+when writing the FIFO only use 1 write()
+
+The child process is handling the word processing so use waitpid()
+
+If candidate words is not valid follow provided algorithm to find word to suggest.
+From the last index of the invalid word and move forward 
+
+DO not display a line of output for the top layer
+
+
+Have error handling for every open read write and possible failures in the pipe FIFO etc
