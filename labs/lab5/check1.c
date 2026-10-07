@@ -121,7 +121,6 @@ static int send_values(int fd, const char *prefix)
    return result;
 }
 
-/* A pipe is a byte stream: collect a complete two-byte value before printing. */
 static int receive_values(int fd, const char *prefix)
 {
    while (1)
