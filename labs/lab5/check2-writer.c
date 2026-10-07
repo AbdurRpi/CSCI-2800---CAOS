@@ -1,20 +1,21 @@
-/* Checkpoint 2: run in a separate terminal from the reader. */
+/* Checkpoint 2 */
 
 /* gcc -Wall -Werror lab05-fifo-writer.c -o lab05-fifo-writer.out */
 
-#define _POSIX_C_SOURCE 200809L
+/*  gcc -Wall -Werror check2-writer.c -o check2-writer.out */
+
+/* mkfifo /tmp/check2-writer */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdint.h>
 #include <errno.h>
-#include <ctype.h>
 #include <signal.h>
-#include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-_Static_assert(sizeof(uint16_t) == 2, "This program requires two-byte values");
+/* unsigned short is checked in main before sending two-byte values. */
 
 /* Report close failures without retrying a descriptor that may be closed. */
 static int close_fd(int fd)
@@ -27,52 +28,83 @@ static int close_fd(int fd)
    return EXIT_SUCCESS;
 }
 
-/* One integer per input line; validate before converting to uint16_t. */
+/* Read one line with scanf, checking digits before the value can overflow.
+ * Return 1 for valid input, 0 for EOF, -1 for invalid input, -2 for an error.
+ */
+static int get_number(unsigned short *value)
+{
+   unsigned int number = 0;
+   int digits = 0;
+   int started = 0;
+   int trailing_space = 0;
+   int invalid = 0;
+   int saw_character = 0;
+   char c;
+   int rc;
+
+   while ((rc = scanf("%c", &c)) == 1)
+   {
+      saw_character = 1;
+      if (c == '\n') break;
+
+      if (c == ' ' || c == '\t' || c == '\r' || c == '\v' || c == '\f')
+      {
+         if (started) trailing_space = 1;
+      }
+      else if (c == '+' && !started)
+      {
+         started = 1;
+      }
+      else if (c >= '0' && c <= '9')
+      {
+         started = 1;
+         digits = 1;
+         if (trailing_space || number > 6553 ||
+             (number == 6553 && c > '5'))
+            invalid = 1;
+         if (!invalid) number = number * 10 + (c - '0');
+      }
+      else
+      {
+         invalid = 1;
+      }
+   }
+
+   if (rc == EOF && ferror(stdin)) return -2;
+   if (rc == EOF && !saw_character) return 0;
+   if (invalid || !digits) return -1;
+   *value = (unsigned short)number;
+   return 1;
+}
+
+/* One integer per input line. */
 static int send_values(int fd, const char *prefix)
 {
-   char *line = NULL;
-   size_t capacity = 0;
    int result = EXIT_SUCCESS;
 
-   for (;;)
+   while(1)
    {
       printf("%sEnter positive integer (0 to exit): ", prefix);
       fflush(stdout);
-      ssize_t length = getline(&line, &capacity, stdin);
-      if (length == -1)
+      unsigned short value;
+      int rc = get_number(&value);
+      if (rc == 0) break;
+      if (rc == -2)
       {
-         if (!feof(stdin))
-         {
-            perror("input failed");
-            result = EXIT_FAILURE;
-         }
+         fprintf(stderr, "ERROR: input failed\n");
+         result = EXIT_FAILURE;
          break;
       }
-
-      /* Reject embedded null bytes rather than accepting a hidden suffix. */
-      int invalid = 0;
-      for (ssize_t i = 0; i < length; i++)
-         if (*(line + i) == '\0') invalid = 1;
-
-      char *end;
-      errno = 0;
-      long number = strtol(line, &end, 10);
-      if (end == line || errno == ERANGE) invalid = 1;
-      while (isspace((unsigned char)*end)) end++;
-      if (*end != '\0' || number < 0 || number > 65535) invalid = 1;
-
-      if (invalid)
+      if (rc == -1)
       {
          fprintf(stderr, "ERROR: enter an integer from 1 to 65535, or 0 to exit\n");
          continue;
       }
-      if (number == 0) break;
-
-      uint16_t value = (uint16_t)number;
-      size_t sent = 0;
+      if (value == 0) break;
+      int sent = 0;
       while (sent < sizeof(value))
       {
-         ssize_t n = write(fd, (const char *)&value + sent,
+         int n = write(fd, (const char *)&value + sent,
                            sizeof(value) - sent);
          if (n == -1)
          {
@@ -87,18 +119,22 @@ static int send_values(int fd, const char *prefix)
             result = EXIT_FAILURE;
             break;
          }
-         sent += (size_t)n;
+         sent += (int)n;
       }
       if (result == EXIT_FAILURE) break;
-      printf("%sWrote %u to pipe (2 bytes)\n", prefix, (unsigned int)value);
+      printf("PARENT: %sWrote %u to pipe (2 bytes)\n", prefix, (unsigned int)value);
    }
 
-   free(line);
    return result;
 }
 
 int main(int argc, char **argv)
 {
+   if (sizeof(unsigned short) != 2)
+   {
+      fprintf(stderr, "ERROR: this program requires a two-byte unsigned short\n");
+      return EXIT_FAILURE;
+   }
    if (argc != 2)
    {
       fprintf(stderr, "USAGE: %s <fifo-path>\n", *argv);
@@ -117,7 +153,7 @@ int main(int argc, char **argv)
       perror("stat() failed (create the named pipe with mkfifo first)");
       return EXIT_FAILURE;
    }
-   if (!S_ISFIFO(info.st_mode))
+   if (S_ISFIFO(info.st_mode) == 0)
    {
       fprintf(stderr, "ERROR: path must name a FIFO, not a regular file\n");
       return EXIT_FAILURE;
@@ -141,7 +177,7 @@ int main(int argc, char **argv)
       close_fd(fd);
       return EXIT_FAILURE;
    }
-   if (!S_ISFIFO(info.st_mode))
+   if (S_ISFIFO(info.st_mode) == 0)
    {
       fprintf(stderr, "ERROR: opened descriptor is not a FIFO\n");
       close_fd(fd);

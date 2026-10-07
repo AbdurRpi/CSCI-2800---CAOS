@@ -1,20 +1,17 @@
 /* Checkpoint 2: run in a separate terminal from the writer. */
 
-/* gcc -Wall -Werror lab05-fifo-reader.c -o lab05-fifo-reader.out */
+/*  gcc -Wall -Werror check2-reader.c -o check2-reader.out */
 
-#define _POSIX_C_SOURCE 200809L
+/* mkfifo /tmp/check2-reader */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdint.h>
 #include <errno.h>
-#include <ctype.h>
-#include <signal.h>
-#include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-_Static_assert(sizeof(uint16_t) == 2, "This program requires two-byte values");
+/* unsigned short is checked in main before receiving two-byte values. */
 
 /* Report close failures without retrying a descriptor that may be closed. */
 static int close_fd(int fd)
@@ -30,13 +27,13 @@ static int close_fd(int fd)
 /* A pipe is a byte stream: collect a complete two-byte value before printing. */
 static int receive_values(int fd, const char *prefix)
 {
-   for (;;)
+   while(1)
    {
-      uint16_t value;
-      size_t received = 0;
+      unsigned short value;
+      int received = 0;
       while (received < sizeof(value))
       {
-         ssize_t n = read(fd, (char *)&value + received,
+         int n = read(fd, (char *)&value + received,
                           sizeof(value) - received);
          if (n == -1)
          {
@@ -50,14 +47,19 @@ static int receive_values(int fd, const char *prefix)
             fprintf(stderr, "ERROR: incomplete value received\n");
             return EXIT_FAILURE;
          }
-         received += (size_t)n;
+         received += (int)n;
       }
-      printf("%sRead %u from pipe (2 bytes)\n", prefix, (unsigned int)value);
+      printf("CHILD: %sRead %u from pipe (2 bytes)\n", prefix, (unsigned int)value);
    }
 }
 
 int main(int argc, char **argv)
 {
+   if (sizeof(unsigned short) != 2)
+   {
+      fprintf(stderr, "ERROR: this program requires a two-byte unsigned short\n");
+      return EXIT_FAILURE;
+   }
    if (argc != 2)
    {
       fprintf(stderr, "USAGE: %s <fifo-path>\n", *argv);
@@ -71,7 +73,7 @@ int main(int argc, char **argv)
       perror("stat() failed (create the named pipe with mkfifo first)");
       return EXIT_FAILURE;
    }
-   if (!S_ISFIFO(info.st_mode))
+   if (S_ISFIFO(info.st_mode) == 0)
    {
       fprintf(stderr, "ERROR: path must name a FIFO, not a regular file\n");
       return EXIT_FAILURE;
@@ -95,7 +97,7 @@ int main(int argc, char **argv)
       close_fd(fd);
       return EXIT_FAILURE;
    }
-   if (!S_ISFIFO(info.st_mode))
+   if (S_ISFIFO(info.st_mode) == 0)
    {
       fprintf(stderr, "ERROR: opened descriptor is not a FIFO\n");
       close_fd(fd);

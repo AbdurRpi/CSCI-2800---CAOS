@@ -1,14 +1,23 @@
-/* lab05-checkpoint1-ai.c */
-/*   gcc -Wall -Werror check1.c    */
+/* Checkpoint 3 */
 
-/* Checkpoint 1: parent sends two-byte integers to its child. */
+
+/*  gcc -Wall -Werror check3-writer.c -o check3-writer.out */
+
+/* mkfifo /tmp/check3-writer */
+
+/*  ./check3-writer.out -f output.txt */
+
+/* Checkpoint 3: write two-byte values to a FIFO or a regular file. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
-#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
 
+/* unsigned short is checked in main before sending two-byte values. */
 
 /* Report close failures without retrying a descriptor that may be closed. */
 static int close_fd(int fd)
@@ -71,13 +80,13 @@ static int get_number(unsigned short *value)
 }
 
 /* One integer per input line. */
-static int send_values(int fd, const char *prefix)
+static int send_values(int fd, const char *filename)
 {
    int result = EXIT_SUCCESS;
 
    while (1)
    {
-      printf("%sEnter positive integer (0 to exit): ", prefix);
+      printf("Enter positive integer (0 to exit): ");
       fflush(stdout);
       unsigned short value;
       int rc = get_number(&value);
@@ -115,124 +124,97 @@ static int send_values(int fd, const char *prefix)
          sent += (int)n;
       }
       if (result == EXIT_FAILURE) break;
-      printf("%sWrote %u to pipe (2 bytes)\n", prefix, (unsigned int)value);
+      if (filename == NULL)
+         printf("Wrote %u to pipe (2 bytes)\n", (unsigned int)value);
+      else
+         printf("Wrote %u to \"%s\" (2 bytes)\n",
+                (unsigned int)value, filename);
    }
 
    return result;
 }
 
-/* A pipe is a byte stream: collect a complete two-byte value before printing. */
-static int receive_values(int fd, const char *prefix)
-{
-   while (1)
-   {
-      unsigned short value;
-      int received = 0;
-      while (received < sizeof(value))
-      {
-         int n = read(fd, (char *)&value + received,
-                          sizeof(value) - received);
-         if (n == -1)
-         {
-            if (errno == EINTR) continue;
-            perror("read() failed");
-            return EXIT_FAILURE;
-         }
-         if (n == 0)
-         {
-            if (received == 0) return EXIT_SUCCESS;
-            fprintf(stderr, "ERROR: incomplete value received\n");
-            return EXIT_FAILURE;
-         }
-         received += (int)n;
-      }
-      printf("%sRead %u from pipe (2 bytes)\n", prefix, (unsigned int)value);
-   }
-}
-
-int main(void)
+int main(int argc, char **argv)
 {
    if (sizeof(unsigned short) != 2)
    {
       fprintf(stderr, "ERROR: this program requires a two-byte unsigned short\n");
       return EXIT_FAILURE;
    }
-   /* SIGPIPE becomes a checked write error if the child disappears. */
+   int file_mode = 0;
+   char *path;
+
+   if (argc == 2 && strcmp(*(argv + 1), "-f") != 0)
+   {
+      path = *(argv + 1);
+   }
+   else if (argc == 3 && strcmp(*(argv + 1), "-f") == 0)
+   {
+      file_mode = 1;
+      path = *(argv + 2);
+   }
+   else
+   {
+      fprintf(stderr, "USAGE: %s {<fifo-name> | -f <filename>}\n", *argv);
+      return EXIT_FAILURE;
+   }
    if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
    {
       perror("signal() failed");
       return EXIT_FAILURE;
    }
-   if (setvbuf(stdout, NULL, _IONBF, 0) != 0)
+
+   /* A FIFO must already exist. A regular output file may be new. */
+   struct stat info;
+   if (stat(path, &info) == -1)
    {
-      fprintf(stderr, "setvbuf() failed\n");
+      if (file_mode == 0 || errno != ENOENT)
+      {
+         perror("stat() failed");
+         return EXIT_FAILURE;
+      }
+   }
+   else if ((file_mode == 0 && S_ISFIFO(info.st_mode) == 0) ||
+            (file_mode == 1 && S_ISREG(info.st_mode) == 0))
+   {
+      fprintf(stderr, "ERROR: use a FIFO without -f, or a regular file with -f\n");
       return EXIT_FAILURE;
    }
 
-   int *pipefd = malloc(2 * sizeof(int));
-   if (pipefd == NULL)
-   {
-      perror("malloc() failed");
-      return EXIT_FAILURE;
-   }
-   if (pipe(pipefd) == -1)
-   {
-      perror("pipe() failed");
-      free(pipefd);
-      return EXIT_FAILURE;
-   }
-
-   pid_t p = fork();
-   if (p == -1)
-   {
-      perror("fork() failed");
-      close_fd(*pipefd);
-      close_fd(*(pipefd + 1));
-      free(pipefd);
-      return EXIT_FAILURE;
-   }
-
-   if (p == 0)
-   {
-      int fd = *pipefd;
-      int result = close_fd(*(pipefd + 1));
-      free(pipefd);
-      if (result == EXIT_SUCCESS)
-         result = receive_values(fd, "CHILD: ");
-      if (close_fd(fd) != EXIT_SUCCESS) result = EXIT_FAILURE;
-      return result;
-   }
-
-   int fd = *(pipefd + 1);
-   int result = close_fd(*pipefd);
-   free(pipefd);
-   if (result == EXIT_SUCCESS)
-      result = send_values(fd, "PARENT: ");
-
-   /* Close BEFORE waiting: the child needs EOF to finish reading. */
-   if (close_fd(fd) != EXIT_SUCCESS) result = EXIT_FAILURE;
-
-   int status;
-   pid_t finished;
+   /* File mode creates or clears the output; FIFO mode waits for a reader. */
+   int fd;
    do
    {
-      finished = waitpid(p, &status, 0);
+      if (file_mode == 1)
+         fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+      else
+         fd = open(path, O_WRONLY);
    }
-   while (finished == -1 && errno == EINTR);
-
-   if (finished == -1)
+   while (fd == -1 && errno == EINTR);
+   if (fd == -1)
    {
-      perror("waitpid() failed");
+      perror("open() failed");
       return EXIT_FAILURE;
    }
-   if (WIFSIGNALED(status))
+   if (fstat(fd, &info) == -1)
    {
-      fprintf(stderr, "CHILD: terminated by signal %d\n", WTERMSIG(status));
-      result = EXIT_FAILURE;
+      perror("fstat() failed");
+      close_fd(fd);
+      return EXIT_FAILURE;
    }
-   else if (!WIFEXITED(status) || WEXITSTATUS(status) != EXIT_SUCCESS)
+   if ((file_mode == 0 && S_ISFIFO(info.st_mode) == 0) ||
+       (file_mode == 1 && S_ISREG(info.st_mode) == 0))
    {
-      result = EXIT_FAILURE;
+      fprintf(stderr, "ERROR: opened file has the wrong type\n");
+      close_fd(fd);
+      return EXIT_FAILURE;
    }
+
+   int result;
+   if (file_mode == 1)
+      result = send_values(fd, path);
+   else
+      result = send_values(fd, NULL);
+   if (close_fd(fd) != EXIT_SUCCESS) result = EXIT_FAILURE;
    return result;
 }
