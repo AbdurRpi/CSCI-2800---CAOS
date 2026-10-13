@@ -248,3 +248,16 @@ main:
     parent waits for remaining children
     parent closes both FIFOs
     parent frees the Trie
+
+
+    GO to Fork-with wait pid 
+    for error checking in waitpid
+
+    create a function for error checking 
+
+    like block_on_waitpid(p):
+
+    block_on_waitpid(p){
+      printf("PARENT: all child processes have terminated\n");
+      printf("PARENT: data: \"%s\"\n", exit_status);
+    }
