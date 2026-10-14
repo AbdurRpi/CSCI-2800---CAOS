@@ -96,15 +96,15 @@ int trie_index( char letter ) {
  */
 int add_word( trie_t * trie, const char * word, int wordlen ) { 
   for(int i = 0; *(word + i + 1) != '\0'; i++){
-     trie = calloc(wordlen, sizeof(char));
-    strcpy(word, trie);
-    print_trie_helper( (*(trie + i)).next, word );
-    return wordlen;
-    if(wordlen > MAXWORDLENGTH){
-      return -1
+     if ( !(*(trie + i)).next || i < wordlen){
+      trie = calloc(26, sizeof(char));
+      return wordlen;
+     }
+    if(wordlen > MAXWORDLENGTH ){
+      return -1;
     }
   }
-
+  return 0;
   }
   /* create as many allocation for the value of wordlen, if the allocations already exist dont reallocate
   * .next points to the next layer if the layer doesnt exist then create it.
@@ -120,7 +120,13 @@ int add_word( trie_t * trie, const char * word, int wordlen ) {
  *
  * (OPTIONAL) use recursion to implement this function
  */
-int is_valid_word( const trie_t * trie, const char * word, int wordlen ) { return 0; }
+int is_valid_word( const trie_t * trie, const char * word, int wordlen ) { 
+  for(int i = 0; (trie + i); i++){
+    if((trie + i)->valid){
+      return 1;
+    }
+  }
+  return 0; }
 
 
 /* deallocate all dynamically allocated memory for
@@ -128,7 +134,11 @@ int is_valid_word( const trie_t * trie, const char * word, int wordlen ) { retur
  *
  * (OPTIONAL) use recursion to implement this function
  */
-void free_trie( trie_t * trie ) { }
+void free_trie( trie_t * trie ) {
+  for(int i = 0; (trie + i); i++){
+    free(trie);
+  }
+ }
 
 
 int main( int argc, char ** argv )
@@ -168,6 +178,7 @@ int main( int argc, char ** argv )
 
   /* free up all dynamically allocated memory for the given Trie */
   free_trie( trie );
+  //free(buffer);
 
   return EXIT_SUCCESS;
 }
