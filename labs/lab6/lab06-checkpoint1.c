@@ -67,8 +67,9 @@ void upcase_word( char * word, int wordlen ) {
   for(int i = 0; i < wordlen; i++){
     char letter = *(word + i);
     letter = toupper(letter);
+    *(word + i) = letter;
     //
-    strcpy(&letter, word);
+    //strcpy(&letter, word);
   }
  }
 
@@ -95,17 +96,26 @@ int trie_index( char letter ) {
  * (OPTIONAL) use recursion to implement this function
  */
 int add_word( trie_t * trie, const char * word, int wordlen ) { 
-  for(int i = 0; *(word + i + 1) != '\0'; i++){
-     if ( !(*(trie + i)).next || i < wordlen){
-      trie = calloc(26, sizeof(char));
-      return wordlen;
-     }
-    if(wordlen > MAXWORDLENGTH ){
-      return -1;
-    }
+  if( wordlen < 1 || wordlen > MAXWORDLENGTH) return -1;  /* safeguard against invalid value */
+  for(int i = 0; *(word + i ) != '\0'; i++){ // Check if the last letter of the word is backdlash 0
+     if ( !(*(trie + i)).next || i < wordlen){ // if Not next layer ot i less then worlden
+      int index = trie_index(*(word + i)); // uses the previous function to get index of a letter
+      trie_t *current = trie + index; // find letter in current layer 
+      if (index < 0 || index >= 26) return -1;
+      if(i == wordlen -1){  /* if last letter last position is valid*/
+        current->valid = 1;
+      }else{
+        if (current->next == NULL){ /* if layer doesnt exist  create new layer*/
+          current->next = calloc(26, sizeof(trie_t));
+          if (current->next == NULL) return -1;
+        }
+        trie = current->next;  /* move down to next layer*/
+      }
   }
-  return 0;
-  }
+}
+return wordlen;
+}
+  
   /* create as many allocation for the value of wordlen, if the allocations already exist dont reallocate
   * .next points to the next layer if the layer doesnt exist then create it.
   * every layer of the array should be allocated to the 26 spaces by alphabet default.
@@ -120,8 +130,9 @@ int add_word( trie_t * trie, const char * word, int wordlen ) {
  *
  * (OPTIONAL) use recursion to implement this function
  */
-int is_valid_word( const trie_t * trie, const char * word, int wordlen ) { 
-  for(int i = 0; (trie + i); i++){
+int is_valid_word( const trie_t * trie, const char * word, int wordlen ) {
+  if(wordlen < 1 || wordlen > MAXWORDLENGTH) return 0; 
+  for(int i = 0; i < wordlen; i++){
     if((trie + i)->valid){
       return 1;
     }
@@ -135,16 +146,19 @@ int is_valid_word( const trie_t * trie, const char * word, int wordlen ) {
  * (OPTIONAL) use recursion to implement this function
  */
 void free_trie( trie_t * trie ) {
+  if(trie == NULL) return;  /* safeguard against NULL pointer */
   for(int i = 0; (trie + i); i++){
-    free(trie);
+    free_trie((trie + i)->next);
   }
+  free(trie);
  }
 
 
 int main( int argc, char ** argv )
 {
   /* array to hold top layer of the Trie */
-  trie_t trie[26];
+  trie_t *trie = calloc(26, sizeof(trie_t));
+  if (trie == NULL){ perror("calloc() failed"); return EXIT_FAILURE;}
 
   /* add words to the Trie; modify/expand as you like */
   add_word( trie, "AA", 2 );
