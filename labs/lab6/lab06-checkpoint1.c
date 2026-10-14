@@ -132,13 +132,32 @@ return wordlen;
  */
 int is_valid_word( const trie_t * trie, const char * word, int wordlen ) {
   if(wordlen < 1 || wordlen > MAXWORDLENGTH) return 0; 
+  for (int i = 0; i < wordlen; i++) {
+    int index = trie_index(*(word + i));
+    if (index < 0 || index >= 26) return 0;
+
+    const trie_t *current = trie + index;
+
+    /* The final letter marks the end of a complete word. */
+    if (i == wordlen - 1) return current->valid;
+
+    /* if more letters remain there is another layer. */
+    if (current->next == NULL) return 0;
+    trie = current->next;
+  }
+
+  return 0;
+}
+
+  #if 0
+  if(wordlen < 1 || wordlen > MAXWORDLENGTH) return 0; 
   for(int i = 0; i < wordlen; i++){
     if((trie + i)->valid){
       return 1;
     }
   }
   return 0; }
-
+  #endif
 
 /* deallocate all dynamically allocated memory for
  *  the given Trie data structure
