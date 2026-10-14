@@ -98,7 +98,7 @@ int trie_index( char letter ) {
 int add_word( trie_t * trie, const char * word, int wordlen ) { 
   if( wordlen < 1 || wordlen > MAXWORDLENGTH) return -1;  /* safeguard against invalid value */
   for(int i = 0; *(word + i ) != '\0'; i++){ // Check if the last letter of the word is backdlash 0
-     if ( !(*(trie + i)).next || i < wordlen){ // if Not next layer ot i less then worlden
+     //if ( !(*(trie + i)).next || i < wordlen){ // if Not next layer ot i less then worlden
       int index = trie_index(*(word + i)); // uses the previous function to get index of a letter
       trie_t *current = trie + index; // find letter in current layer 
       if (index < 0 || index >= 26) return -1;
@@ -111,7 +111,7 @@ int add_word( trie_t * trie, const char * word, int wordlen ) {
         }
         trie = current->next;  /* move down to next layer*/
       }
-  }
+  
 }
 return wordlen;
 }
@@ -159,14 +159,58 @@ int is_valid_word( const trie_t * trie, const char * word, int wordlen ) {
   return 0; }
   #endif
 
+
+/* given a word in UPPERCASE that is NOT valid according
+* to the given Trie data structure, determine an alternate
+* word from the Trie; consider using a helper function
+* that iterates through the current Trie layer
+*
+* function returns a pointer to the alternate word
+* or NULL if no alternate is found
+*
+* [OPTIONAL] use recursion to implement this function */
+#if 0
+char * suggest_word( const trie_t * trie, const char * word, int wordlen ){
+  for(int i = 0; i < upcase_word(word, i); i++){
+    if( !is_valid_word(word, i)){
+      trie_index(word, i){}
+
+
+    }
+
+  }
+}
+
+#endif
+
+/* given a prefix in UPPERCASE, generate a list of all valid
+* words according to the given Trie data structure; format
+* the output as a comma-separated list; consider using
+* a helper function and possibly recursion
+*
+* function returns a pointer to a list of all valid words
+* with the given prefix or NULL if no words with the
+* given prefix exist
+*
+* note that this function must dynamically allocate memory
+* for the output string; it is up to the caller to properly
+* de-allocate memory for this string
+*
+* [OPTIONAL] use recursion to implement this function
+*/
+//char * search_prefix( const trie_t * trie, const char * prefix, int prefixlen ){
+  
+//}
+
 /* deallocate all dynamically allocated memory for
  *  the given Trie data structure
  *
  * (OPTIONAL) use recursion to implement this function
  */
+
 void free_trie( trie_t * trie ) {
   if(trie == NULL) return;  /* safeguard against NULL pointer */
-  for(int i = 0; (trie + i); i++){
+  for(int i = 0; i < 26; i++){
     free_trie((trie + i)->next);
   }
   free(trie);
