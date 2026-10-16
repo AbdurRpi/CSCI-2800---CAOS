@@ -291,9 +291,22 @@ if(trie == NULL){
    int bytes = read(fd, candidate, MAXWORDLENGTH);
    
    while (fd == 1){ // while the reading and returning bytes
-      for(int i = 0; i < *(*(argv + 2)+i); i++){
-         if(char byte = atoi(byte) ){}
+      for(int i = 0; *(bytes + i); i++){
+         if( byte = atoi(byte) ){
+            strcpy(byte ,candidate);
+         }
+         if (byte == '-');
+            pid_t p = fork();
+            if (p == -1){perror("fork() failed"); return EXIT_FAILURE;}
 
+            if(p == 0){
+               int bw = write(fd2, candidate, 1);
+               exit()
+            }
+
+         }
+         if(fd == 0){
+            printf("Writer has closed");
          }
       }
    
