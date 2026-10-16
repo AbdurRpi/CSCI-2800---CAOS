@@ -2,6 +2,7 @@
 /*  gcc -Wall -Werror check3-writer.c -o check3-writer.out */
 /* mkfifo /tmp/check3-writer */
 /*  ./check3-writer.out -f output.txt */
+/* ./hw2r.out input.txt unused-read unused-write*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -278,11 +279,30 @@ if(trie == NULL){
    printf("PARENT: added %d words to the Trie\n", word_count);
 
    /* Temporary test: remove this call */
-   print_trie(trie);
+   ///print_trie(trie);
+
+   int fd = open(*(argv + 2), O_RDONLY);
+   if( fd == -1){perror( "reading open() failed"); return EXIT_FAILURE; }
+   int fd2 = open(*(argv + 3), O_WONLY);
+   if( fd2 == -1) {perror ("writing open() failed"); return EXIT_FAILURE; }
+
+   char * candidate = calloc(MAXWORDLENGTH, sizeof(char));
+   if (candidate == NULL){perror("calloc() failed"); return EXIT_FAILURE; }
+   int bytes = read(fd, candidate, MAXWORDLENGTH);
+   
+   while (fd == 1){ // while the reading and returning bytes
+      for(int i = 0; i < *(*(argv + 2)+i); i++){
+         if(char byte = atoi(byte) ){}
+
+         }
+      }
+   
+
 
    free_trie(trie);
    return EXIT_SUCCESS;
 }
+
 #if 0
 setvbuff(stdout, NULL, _IONBF, 0);
 
