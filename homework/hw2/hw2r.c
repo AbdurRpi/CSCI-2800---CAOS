@@ -281,41 +281,61 @@ if(trie == NULL){
    /* Temporary test: remove this call */
    ///print_trie(trie);
 
-   int fd = open(*(argv + 2), O_RDONLY);
+   int fd = open(*(argv + 2), O_RDONLY); // reading part of the FIFO
    if( fd == -1){perror( "reading open() failed"); return EXIT_FAILURE; }
-   int fd2 = open(*(argv + 3), O_WONLY);
+   int fd2 = open(*(argv + 3), O_WRONLY); // Writing part of the FIFO
    if( fd2 == -1) {perror ("writing open() failed"); return EXIT_FAILURE; }
 
    char * candidate = calloc(MAXWORDLENGTH, sizeof(char));
    if (candidate == NULL){perror("calloc() failed"); return EXIT_FAILURE; }
-   int bytes = read(fd, candidate, MAXWORDLENGTH);
-   
+   const int byte = read(fd, candidate, MAXWORDLENGTH);
+   int len = strlen((int)byte);
+   int status; // status exit
+   pid_t p; // for process id of parent and child used in fork
+   pid_t w; // for process id of waitpid only used in parent 
+   char response; // response of child wether it adds a '.' '>' or '?'
+   int bw = write(fd2, (char)response, 1);
    while (fd == 1){ // while the reading and returning bytes
-      for(int i = 0; *(bytes + i); i++){
-         if( byte = atoi(byte) ){
-            strcpy(byte ,candidate);
+      for(int i = 0; *((int)byte + i); i++){
+         if( byte == atoi((int)byte) ){
+            strcpy(&byte ,candidate);
          }
-         if (byte == '-');
-            pid_t p = fork();
+         if (byte == '-'){
+            p = fork();
             if (p == -1){perror("fork() failed"); return EXIT_FAILURE;}
-
+            }
             if(p == 0){
-               int bw = write(fd2, candidate, 1);
-               exit()
+               close(fd);
+               upcase_word(byte, len);
+               if(is_valid_word(trie, byte, len) == TRUE){
+               response = byte + '.';
+               //int bw = write(fd2, (char)response, 1);
+               }else{
+                  char alertnative = find_alternative(candidate, trie);
+                  if(find_alterntive(candidate, trie) == TRUE){
+                     response = byte + '>';
+                  }else{
+                     response = byte + '?';
+                  }
+               }
+               printf("CHILD: response: %c", bw);
+               close(fd2);
+               exit(status);
             }
 
-         }
-         if(fd == 0){
-            printf("Writer has closed");
-         }
+            if(p > 0){
+               close(fd);
+               close(fd2);
+               candidate = NULL;
+               w = waitpid(p, &status, 0);
+               free_trie(trie);
+               free(candidate);
+               return EXIT_SUCCESS;
+               
+            }
       }
-   
-
-
-   free_trie(trie);
-   return EXIT_SUCCESS;
 }
-
+}
 #if 0
 setvbuff(stdout, NULL, _IONBF, 0);
 
