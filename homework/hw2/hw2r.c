@@ -10,6 +10,9 @@
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <sys/wait.h>
 
 #define MAXWORDLENGTH 16
 
@@ -263,7 +266,6 @@ int main(int argc, char ** argv){
       return EXIT_FAILURE;
    }
 
-
 trie_t *trie = calloc(26, sizeof(trie_t));
 if(trie == NULL){
    perror("ERROR: calloc");
@@ -278,32 +280,68 @@ if(trie == NULL){
 
    printf("PARENT: added %d words to the Trie\n", word_count);
 
-   /* Temporary test: remove this call */
+   /* Temporary test  */
    ///print_trie(trie);
 
    int fd = open(*(argv + 2), O_RDONLY); // reading part of the FIFO
-   if( fd == -1){perror( "reading open() failed"); return EXIT_FAILURE; }
-   int fd2 = open(*(argv + 3), O_WRONLY); // Writing part of the FIFO
-   if( fd2 == -1) {perror ("writing open() failed"); return EXIT_FAILURE; }
+   if( fd == -1){
+      perror( "ERROR: reading open() failed"); 
+      free(candidate);
+      free_trie(trie);
+      return EXIT_FAILURE; 
+   }
 
-   char * candidate = calloc(MAXWORDLENGTH, sizeof(char));
-   if (candidate == NULL){perror("calloc() failed"); return EXIT_FAILURE; }
-   const int byte = read(fd, candidate, MAXWORDLENGTH);
-   int len = strlen((int)byte);
+   int fd2 = open(*(argv + 3), O_WRONLY); // Writing part of the FIFO
+   if( fd2 == -1) {
+      perror ("ERROR: writing open() failed"); 
+      close(fd);
+      free(candidate);
+      free_trie(trie);
+      return EXIT_FAILURE; 
+   }
+
+   int capacity = MAXWORDLENGTH + 1; // extra space for \0
+   int len = 0; // variable for counting the length of bytes coming in
+
+   char * candidate = calloc(capacity, sizeof(char)); // buffer for inputted words
+
+   if (candidate == NULL){
+      perror("calloc() failed");
+      close(fd);
+      close(fd2);
+      free_trie(trie);
+    return EXIT_FAILURE; 
+   }
+
+   //const int byte = read(fd, candidate, MAXWORDLENGTH);
+   char byte;
    int status; // status exit
    pid_t p; // for process id of parent and child used in fork
    pid_t w; // for process id of waitpid only used in parent 
    char response; // response of child wether it adds a '.' '>' or '?'
    int bw = write(fd2, (char)response, 1);
-   while (fd == 1){ // while the reading and returning bytes
-      for(int i = 0; *((int)byte + i); i++){
-         if( byte == atoi((int)byte) ){
-            strcpy(&byte ,candidate);
-         }
-         if (byte == '-'){
-            p = fork();
-            if (p == -1){perror("fork() failed"); return EXIT_FAILURE;}
+   int r;
+
+   while ((r = read(fd, &byte, 1)) > 0){ // while the reading and returning bytes, reads one character at a time
+
+         if (byte != '-'){
+            if (len + 1 >= capacity){ // This function is in case of an overflow, if candidate exceeds wordlen
+               int ncap = capacity + 2;
+               char *buffer = calloc(ncap, sizeof(char));
+               if (larger == NULL){
+                  perror("ERROR: calloc()");
+                  return EXIT_FAILURE;
+                  break
+               }
             }
+            *(candidate + len) = '\0'; 
+            p = fork();
+            len = 0;
+            *candidate = '\0';
+         }
+            if (p == -1){perror("fork() failed"); return EXIT_FAILURE;}
+            if (len == 0) continue;
+
             if(p == 0){
                close(fd);
                upcase_word(byte, len);
