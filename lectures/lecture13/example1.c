@@ -14,7 +14,5 @@ int main(){
 
    goto ENDLOOP1;
 LOOP1:
-
-
    return EXIT_SUCCESS;
 }
