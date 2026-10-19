@@ -1,0 +1,131 @@
+[09/11/2026]
+
+QUIZ 1  --- YOU MAY LEAVE AT 11:34AM (but feel free to stay until 11:50AM)
+
+-----------------------------------------------------------------------------
+
+
+LABS
+(1) The TAs/CAs/mentors will CLOSE the queue(s) 10 minutes before
+     the end of lab -- make a "last call" announcement (11:40AM, 1:40PM, 3:40PM)
+
+(2) A few ZERO grades will be assigned for using AI....
+
+
+QUIZ 1 -- ~11:15AM
+
+
+NUMBER FORMATS (integers)
+
+sizeof char is 1
+sizeof short is 2
+sizeof int is 4
+sizeof long is 8
+
+unsigned char is 1 byte --- range of values: 0..255 (256 possible values)
+^^^^^^^^^^^^^                                          unsigned int
+                                                        |
+                                                        v
+                                           printf( "%d %u\n", x, y );
+            8                                       ^^
+           2  =  256                            signed int
+
+Representation is two's complement
+sizeof char is 1 byte --- range of values: -128 to 127 (256 possible values)
+      ^            <base 10>     <base 2>
+   signed              -128 ==> 1000 0000
+
+                          0 ==> 0000 0000
+                          1 ==> 0000 0001
+                          2 ==> 0000 0010
+                          3 ==> 0000 0011
+
+                        127 ==> 0111 1111    64 + 32 + 16 + 8 + 4 + 2 + 1
+
+
+            convert binary 00110110 to base 10...
+                   ...using unsigned char and also char as data types
+
+       unsigned char:       7  6  5  4  3  2  1  0
+                           2  2  2  2  2  2  2  2
+                         ===========================
+                           0  0  1  1  0  1  1  0     32 + 16 + 4 + 2 = 54
+
+       (signed) char:       7  6  5  4  3  2  1  0
+                          -2  2  2  2  2  2  2  2
+                         ===========================
+                           0  0  1  1  0  1  1  0     32 + 16 + 4 + 2 = 54
+
+
+                         -1 ==> 1111 1111
+
+                               -128 + 64 + 32 + 16 + 8 + 4 + 2 + 1
+
+
+            convert binary 11001001 to base 10...
+                  ...using unsigned char and also char as data types
+
+
+                unsigned char   1100 1001 ==> 128 + 64 + 8 + 1 = 201
+
+                (signed) char   1100 1001 ==> -128 + 64 + 8 + 1 = -55
+
+
+            convert decimal (base 10) 141 to base 2?
+
+                            128 + 8 + 4 + 1 ==> 1000 1101
+
+                  aha! rightmost bit tells us even or odd...
+
+                              
+  the "two's complement" trick:
+
+              in decimal, we have 13 and we want to encode -13....
+
+                  13 in base 2 ==> 0000 1101
+
+                 flip all bits ==> 1111 0010
+
+                         add 1 ==> 1111 0011     <== is that -13?
+
+                                   -128 + 64 + 32 + 16 + 2 + 1 = -13
+
+
+
+  HEXADECIMAL -- base 16
+
+         DIGITS: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f
+                                             (10,11,12,13,14,15)
+
+
+                 hex   binary
+                   0   0000
+                   1   0001
+                   2   0010
+                   3   0011
+                   4   0100
+                 ...    ...
+                   e   1110
+                   f   1111
+
+              convert base 2 to base 16:
+
+                          0000 1101   <== 13 (base 10)
+
+                    hex:    0    d    <== 0x0d
+
+
+                          1111 0011   <== -13 (base 10)
+
+                    hex:    f    3    <== 0xf3
+
+
+                       int x = 0xf3;
+                       int y = 0664;   /* rw-rw-r-- */
+
+                       int z = 0b11110011;  /* for C++, Python, JavaScript */
+
+
+   TO DO: try doing conversions to/from octal
+
+

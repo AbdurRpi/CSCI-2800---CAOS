@@ -1,0 +1,66 @@
+[10/06/2026]
+
+Pop Quiz 1
+
+Q2(a)   h[2][1]  ==>  *( *( h + 2 ) + 1 )
+         --or--
+        h[2][2]  ==>  *( *( h + 2 ) + 2 )
+
+  (b)   h[15][0]  ==> *( *( h + 15 ) + 0 )
+         --or--
+        h[15][0]  ==> *( *( h + 15 ) )
+         --or--
+        h[15][0]  ==> **( h + 15 )
+
+============================================================
+
+  /* fd table:
+   *
+   *  <<PARENT>>                                      <<CHILD>>
+   *  0: stdin                                        0: stdin
+   *  1: stdout                                       1: stdout 
+   *  2: stderr                +--------+             2: stderr
+   *  3: pipefd[0] <===READ====| buffer |====READ===> 3: pipefd[0]
+   *  4: pipefd[1] ====WRITE==>| buffer |<===WRITE=== 4: pipefd[1]
+   *                           +--------+
+   */
+
+ What if we want to have bidirectional communication between
+  the parent process and the child process?
+
+ OPTION 1: use the read/write descriptors for the one pipe shown above...
+
+      <<PARENT>>                             <<CHILD>>
+      /* send request message */             /* receive request msg */
+      /*  to the child process */            /*  from parent process */
+      write( pipefd[1], ..., 20 );           read( pipefd[0], ..., 20 );
+      ...                                    ...
+      /* receive response message */         /* send response msg */
+      /*  from the child process */          /*  to parent process */
+      read( pipefd[0], ..., 4 );             write( pipefd[1], ..., 4 );
+      ...                                    ...
+
+ OPTION 2: create two pipes, one for parent-to-child communication,
+            the other for child-to-parent communication
+
+      <<PARENT>>                             <<CHILD>>
+      /* send request message */             /* receive request msg */
+      /*  to the child process */            /*  from parent process */
+      write( pipefd1[1], ..., 20 ); =======> read( pipefd1[0], ..., 20 );
+      ...                                    ...
+      /* receive response message */         /* send response msg */
+      /*  from the child process */          /*  to parent process */
+      read( pipefd2[0], ..., 4 ); <========= write( pipefd2[1], ..., 4 );
+      ...                                    ...
+
+            *** read() is a blocking call for all of the above ***
+
+
+                     SYNCHRONIZATION...
+
+
+
+
+
+
+

@@ -1,0 +1,263 @@
+Command Line argumens 
+cannot use FILE
+cannot use malloc() or memset()
+1st command line
+use open() read() close()
+
+2nd command line
+
+make a FIFO to read candidate words
+
+make another FIFO so that it can read result of the spell check
+open the FIFO's for reading first before writing
+
+ Create a trie tree structture 
+
+ 1 over arching Array 
+ | A | B | C | D | E | F | G | H | I | J | K | ...
+
+ (which is)  0 1
+[0....26]   [A][B]
+Then for each Letter create a seperate Array for that too 
+
+a struct 
+
+so for A (0) if would be [B,C,D,E]
+
+once tried structure is created then open each FIFO with open()
+and read() write() when necesarry
+
+Interprocess requirement
+
+use the first FIFO to handle processing the Candidate word
+Call Fork () let the child process handle and write to the second FIFO
+which is there to handle the spell checker
+
+If the candidate word is valid  send the word back on the FIFO with a period
+EX. if word is "CAOS" write "CAOS." back to FIFO
+
+when writing the FIFO only use 1 write()
+
+The child process is handling the word processing so use waitpid()
+
+If candidate words is not valid follow provided algorithm to find word to suggest.
+From the last index of the invalid word and move forward 
+
+DO not display a line of output for the top layer
+
+
+Have error handling for every open read write and possible failures in the pipe FIFO etc
+
+
+- Sudeo Code
+
+#includes 
+
+
+#define MAXWORDLENGTH 16
+
+// Helper functions
+
+typedef struct trie
+{
+  char valid;         /* 0 if not a valid word to this point; 1 if word is valid */
+  struct trie * next; /* pointer to next level of Trie; or NULL if no next level */
+}
+trie_t;
+
+
+void print_trie_helper( const trie_t * trie, char * prefix )
+{
+  const trie_t * ptr = trie;
+
+  /* visit each of the 26 elements of this layer of the Trie */
+  for ( int i = 0 ; i < 26 ; i++ )
+  {
+    int len = strlen( prefix );
+
+    /* append next character */
+    *(prefix + len) = 'A' + i;
+
+    /* display valid word, if present */
+    if ( (*(ptr + i)).valid ) printf( "==> %s\n", prefix );
+
+    /* recurse to the next level, if present */
+    if ( (*(ptr + i)).next ) print_trie_helper( (*(ptr + i)).next, prefix );
+
+    /* remove last character */
+    *(prefix + len) = '\0';
+  }
+}
+
+
+/* Display all words in the given Trie */
+void print_trie( const trie_t * trie )
+{
+  if ( trie == NULL ) return;  /* safeguard against NULL pointer */
+  char * prefix = calloc( MAXWORDLENGTH + 1, sizeof( char ) );
+  if ( prefix == NULL ) { perror( "calloc() failed" ); exit( EXIT_FAILURE ); }
+  print_trie_helper( trie, prefix );
+}
+
+void find_alternate(){
+   this function is going to be recursive and help find alternative words by trversing the trie
+   returns alternative word
+}
+
+void canw_valid(){
+   this function is suppose to traverse the trie and determine if the word is valid ( may be recursive)
+   return candidate value if valid
+}
+
+
+int main( int argc **argv){
+
+   Error check
+   if (argv == 1){
+      print error()
+   }
+
+   int *(pipefd + 2);
+
+   int rc = pipe(pipefd);
+
+   initialize pipe and processesor communication pipeline
+   int pipefd = pipe();
+
+   char * fifo1 = "/tmp/fifo1
+   char * fifo2 = "/tmp/fifo2
+
+   int mf = mkfifo( fifo1, 06660)
+   int mf2 = mkfifo( fifo2, 06660)
+
+   int fd = open(fifo1, O_RDONLY){
+      error check
+   }
+
+   
+   while(!fd(closed)){ // While candidate words are still being recived or inputed
+      char *buffer = calloc(64, sizeof(char));
+      if(error check){
+
+      }
+     
+
+   pid_t p = fork()
+
+   if (p == 0){
+      int fd = *pipefd
+      int r = close_fd(*(pipefd + 1)) /Close The writer proccess
+       int candw = read( fd, buffer, 31);
+   {
+      error check
+   }
+   if (canw_valid == true){
+      open(fifo2, O_WRONLY);
+
+      char response = canw +".";
+
+      elseif(canw_valid != true){
+         find_alternative()
+         char response = find_alternative + ">" + canw_valid +"?";
+
+
+      }elseif(can_w != find_alternative){
+         char response = can_w + "?\n"
+
+      }
+
+   write(fifo2, response, 1);
+   }
+
+   free() // free whater buffer is in use 
+
+   }
+
+   if (p > 0){
+      int status;
+      int r = close_fd(*(pipe)) // close the writing end.
+      {error check}
+      pid_t cp = waitpid(p, &status, 0);
+      for(canw_valid // amount of valid candidate letters in the candidate word ){
+         printf("PARENT: creating new Trie layer for '%c' of %s");
+         if( There are no more candidate words){
+            printf(PARENT: added 11 words to the Trie);
+         }
+      }
+      free( any buffer or used memory)
+   }
+
+
+   }
+
+
+return EXIT_SUCCESS
+}
+
+
+
+
+
+Define the Trie node:
+    valid: does a word end here?
+    next: pointer to another layer of 26 nodes
+
+add_word(trie, word):
+    walk through the letters
+    create a new 26-node layer whenever needed
+    mark the final letter as valid
+
+load_dictionary(filename, trie):
+    open the dictionary
+    read words separated by newlines
+    validate and capitalize each word
+    call add_word for each valid word
+    close the dictionary
+
+read_candidate(read_fifo):
+    collect characters until a hyphen
+    return one complete candidate word
+
+make_response(trie, candidate):
+    if candidate is valid, return candidate followed by "."
+    otherwise find a suggested word
+    return candidate, suggestion, and "?" in the required format
+
+main:
+    check for three command-line arguments
+    create the top Trie layer
+    load the entire dictionary
+    print the number of words added
+
+    open the candidate FIFO for reading
+    open the response FIFO for writing
+
+    while another candidate arrives:
+        parent reads one complete candidate
+        parent forks a child
+
+        child:
+            builds one complete response
+            sends it with exactly one write
+            closes its descriptors and exits
+
+        parent:
+            continues reading candidates
+            collects any children that have finished
+
+    parent waits for remaining children
+    parent closes both FIFOs
+    parent frees the Trie
+
+
+    GO to Fork-with wait pid 
+    for error checking in waitpid
+
+    create a function for error checking 
+
+    like block_on_waitpid(p):
+
+    block_on_waitpid(p){
+      printf("PARENT: all child processes have terminated\n");
+      printf("PARENT: data: \"%s\"\n", exit_status);
+    }

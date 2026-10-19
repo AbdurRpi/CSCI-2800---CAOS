@@ -1,0 +1,46 @@
+[10/02/2026]
+
+Inter-Process Communication (IPC)
+
+ <process>                      <process>
++---------+                    +---------+
+|         |                    |         |  slow
+|         |<==RW==>file<==RW==>|         |  requires synchronization...
+|         |                    |         |
+|         |                    |         |
++---------+                    +---------+
+
+
+ <process>                      <process>
++---------+                    +---------+
+|         |                    |         | interrupts running process
+|         |-----signal-------->|         | messy...
+|         |                    |         |
+|         |                    |         |
++---------+                    +---------+
+
+
+pipe-with-fork-ipc.c example...
+
+ <process>                      <process>
+  PARENT                         CHILD
++---------+                    +---------+
+|         |                    |         |  fast (in-memory, not on disk)
+|         |<=====pipe<=========|         |  unidirectional
+|         |                    |         |   (we may need two pipes...)
+|         |                    |         |  requires fork()
++---------+                    +---------+
+
+-- for pipes, the OS keeps track of the number of active/open
+    read descriptors and the number of active/open write descriptors
+
+
+ To not use fork(), we can use a "named pipe" (a.k.a. FIFO)...
+ ...we use a file on disk just to identify/find the pipe
+
+     e.g., use file /tmp/fifo1234  <=== this file will be empty (0 bytes)
+
+ Next time: fifo-reader.c and fifo-writer.c
+
+
+
