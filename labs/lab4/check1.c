@@ -3,11 +3,13 @@ Bash$ gcc -Wall -Werror check3.c
 Bash$ gcc -E -wall -werror simple.c <== preprocessor 
 */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+
 
 int main(){
 
