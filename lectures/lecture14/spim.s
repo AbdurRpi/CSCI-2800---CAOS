@@ -2,6 +2,19 @@
 # use load "spim.s" to run a program then use step to see it running in parts
 # when program hangs for parser label use reinitilaize to reset spim to compile the program
 
+#int main(){
+#   int g = 7, h = 6, i = 5, j = 2;
+#
+#   int f = g + h - i - j;
+#
+#   int p = g - f;
+#   printf("%d", p);
+#}
+#
+#
+#
+
+
 main: li $t1,7             # Load Imediate (li) g = 7
       li $t2,6             # h = 6
       li $t3, 5            # i = 5
