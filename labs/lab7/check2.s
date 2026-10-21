@@ -35,7 +35,7 @@ PRINT:
                            # nothing; $a0 now contains the number to print
       syscall              # Print that integer
 
-      li $v0,4             # Select the print-string syscall again
+      li $v0,4             # Select the print string syscall again
       la $a0,newline       # Put the address of the "\n" string in $a0
       syscall              # Print the newline, moving output to the next line
 
