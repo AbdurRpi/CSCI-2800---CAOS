@@ -10,10 +10,14 @@
 int main(){
    
    int x,y,z;
-   int s = (scanf("%d %d %d", &x, &y, &z) != 3);
+   int s;
+   int bad;
 
+   //goto LABEL7;
    printf("Enter three integers in non-descending order:\n");
-   if(s) goto LABEL1;
+   s = (scanf("%d %d %d", &x, &y, &z));
+   bad = (s != 3);
+   if(bad) goto LABEL1;
 
 
    
@@ -34,22 +38,22 @@ int main(){
 
    int status;
    pid_t p = fork();
-   pid_t t = waitpid(p, &status, 0);
+   pid_t t; 
 
-   int ec = WEXITSTATUS(status);
-   int sn = WTERMSIG(status);
+   int ec;
+   int sn;
 
    int a = (p == -1);
    int b = (p > 0); // for parent process
    int c = (p == 0); // for child process
-   int e = ( t == -1);
+   int e;
 
    if (a) goto LABEL2; // error check if invalid value
-   if (b) goto LOOP1; // if parent process
-   if (c) goto LOOP2; // if child process
+   if (b) goto LOOP2; // if parent process
+   if (c) goto LOOP1; // if child process
 
  
-   LOOP1:
+   LOOP1: // CHILD loop
       if(check1){
          temp = first;
          first = second;
@@ -67,45 +71,57 @@ int main(){
          first = second;
          second = temp;
       } 
+      
+      order1 = (x == first);
+      order2 = (y == second);
+      order3 = (z == third);
 
-      goto LABEL6;
+      correct = correct + order1;
+      correct = correct + order2;
+      correct = correct + order3;
 
-      if (order1) correct ++;
-      if (order2) correct ++;
-      if (order3) correct ++;
-
+      printf("CHILD: correct order is %d %d %d\n",
+             first, second, third);
       exit(correct);
-      goto DONE1;
-   DONE1:
+      
+      //goto LABEL4;
+      //goto DONE1;
+   //DONE1:
 
-   LOOP2:
+   LOOP2: // Parent loop
+      t = waitpid(p, &status, 0);
+      e = ( t == -1);
       if (e) goto LABEL3;
       if(WIFEXITED(status)) goto LABEL4;
          
       else if (WIFSIGNALED(status)) goto LABEL5;
-      goto DONE2;
-   DONE2:
+      //goto DONE2;
+   //DONE2:
 
-   LABEL1:
+   LABEL1: // error statement
       fprintf(stderr, "ERROR: Invalid input\n");
       return EXIT_FAILURE;
 
-   LABEL2:
+   LABEL2: // error statemnt
       perror("fork failed");
       return EXIT_FAILURE;
    
-   LABEL3:
+   LABEL3: // error statment
       perror("waitpid failed");
       return 1;
    
-   LABEL4:
+   LABEL4: // output statment
+      ec = WEXITSTATUS(status);
       printf("PARENT: child process reported %d in the correct position\n",ec );
+      return EXIT_SUCCESS;
    
-   LABEL5:
+   LABEL5: // error check statament
+      sn = WTERMSIG(status);
       printf("PARENT: child terminated by signal %d\n", sn);
 
-   LABEL6:
-      printf("CHILD: correct order is %d %d %d\n",first, second, third);
+   //LABEL7: // Print statement
+      
+      //goto LOOP1;
    
    return EXIT_SUCCESS;
 }
