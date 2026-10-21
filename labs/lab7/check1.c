@@ -54,7 +54,7 @@ int main(){
 
  
    LOOP1: // CHILD loop
-      if(check1){
+      if(check1){ // Change all loop conditions to not use  {} and to make check 2 and 3 properly check as they are outdated
          temp = first;
          first = second;
          second = temp;
