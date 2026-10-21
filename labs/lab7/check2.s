@@ -4,7 +4,7 @@
 # print_all_regs - to look at registery table
 
 .data
-msg:        .asciiz "==> the answer is"
+msg:        .asciiz "==> the answer is "
 newline:    .asciiz "\n"
 
 .text
@@ -16,7 +16,7 @@ main: li $t0,4             # temp sotoring 4 bytes Load Imaedtaley(li)
       li $t0,15            # 15
       add $t1,$t0,$s0      #  q2 = 15 + q2
       li $t0, 11           # 11
-      sub $t0,$t1,$t0      # q2 = 15 + q2 - 11 
+      sub $s0,$t1,$t0      # q2 = 15 + q2 - 11 
       # answer should be -7 im off by 4 somewhere in my aritmetic find erorr for this and check 3 aswell
       li $t0, -13          # 13
       slt $t1,$t0,$s0      # if (q2 > -13), $t1 = 1 and if condition doesnt hold its 0

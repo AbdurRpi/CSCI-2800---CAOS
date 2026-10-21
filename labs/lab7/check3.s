@@ -17,8 +17,8 @@
 
 
 .data
-msg:        .asciiz "==> the answer is"
-msg2:       .asciiz "==> loop iterations:"
+msg:        .asciiz "==> the answer is "
+msg2:       .asciiz "==> loop iterations: "
 newline:    .asciiz "\n"
 
 .text
@@ -28,9 +28,9 @@ main: li $t0,4             # temp sotoring 4 bytes Load Imaedtaley(li)
       
       li $s0,13            # Load Imediately(li) q2 = 13
       li $t0,15            # 15
-      add $t1,$t0,$s0      #  q2 = 15 + q2
+      add $t1,$t0,$s0      # q2 = 15 + q2
       li $t0, 11           # 11
-      sub $t0,$t1,$t0      # q2 = 15 + q2 - 11 
+      sub $s0,$t1,$t0      # q2 = 15 + q2 - 11 
 
       li $t2, 0            # Loop count start at 0
       
@@ -63,6 +63,10 @@ PRINT:
       li $v0,4
       la $a0,msg2
       syscall               # prints the loop count 
+
+      li $v0,1
+      add $a0,$t2,$zero    # Copy the iteration count into $a0
+      syscall              # Print the count as an integer
 
       li $v0,4             # Select the print-string syscall again
       la $a0,newline       # Put the address of the "\n" string in $a0
