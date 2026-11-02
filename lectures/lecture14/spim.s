@@ -11,8 +11,7 @@
 #   printf("%d", p);
 #}
 #
-#
-#
+# print_all_regs - to look at registery table
 
 
 main: li $t1,7             # Load Imediate (li) g = 7

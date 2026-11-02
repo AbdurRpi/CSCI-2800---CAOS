@@ -1,0 +1,35 @@
+[10/23/2026]
+
+MIPS data declaration/initialization
+
+.data
+label:      <storage-type>    <initial-values...>
+
+# initialized memory examples
+
+numarray:   .word   12, 13, 13, 21, 25    # 5-element array (20 bytes) int *
+label:      .byte   '@', '!', '$'         # 3-element array (3 bytes) char *
+newlineb:   .byte   '\n'                  # 1 byte only
+
+
+
+string1:    .asciiz "Some string"          # 12-byte array (ends in '\0')
+string2:    .asciiz "Aha\n"                # 5-byte array (ends in '\0')
+newline:    .asciiz "\n"                   # 2-byte array (ends in '\0')
+
+# uninitialized memory example
+memchunk:   .space  32   # 32-byte uninitialized array
+                         # => could be 32-byte char/byte array
+                         # => could be eight 4-byte int array
+
+
+
+
+Q1   one-byte two's complement
+
+       7  6  5  4  3  2  1  0
+     -2  2  2  2  2  2  2  2
+     +--+--+--+--+--+--+--+--+
+     |  |  |  |  |  |  |  |  |
+     +--+--+--+--+--+--+--+--+
+

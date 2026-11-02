@@ -1,0 +1,53 @@
+[10/27/2026]
+
+s22-csci2500-exam1-solns.pdf
+-- Questions are all good practice,
+    though replace fopen() and fscanf() calls
+     with open() and scanf() on Question 8
+
+s22-csci2500-exam2-solns.pdf
+-- Questions 1 and 5 are good practice problems;
+    the other MIPS questions contain instructions
+     we haven't covered...
+   (sorry, this is not very helpful as practice problems)
+
+*********************************************************************************
+
+     one-byte two's complement
+
+       7  6  5  4  3  2  1  0
+     -2  2  2  2  2  2  2  2
+     +--+--+--+--+--+--+--+--+                     two's complement
+     |  |  |  |  |  |  |  |  |        10011110 ==> -128 + 16 + 8 + 4 + 2 = -98
+     +--+--+--+--+--+--+--+--+
+
+                                      unsigned (not two's complement)
+                                      10011110 ==> 128 + 16 + 8 + 4 + 2 = 158
+
+
+
+           -64 ====>   -128 + 64      ==>  11000000   ==> c0
+
+           -32 ====>   -128 + 64 + 32 ==>  11100000   ==> e0
+
+
+                  64 ==> 01000000
+
+                         10111111 (flip all bits, then add 1)
+                       + 00000001
+                      ------------
+                         11000000  ==> -64
+
+
+
+Indirect addressing...
+
+lw $t0,12($s1)
+
+ $t0 = *($s1 + 12)
+
+
+sw $t0,12($s1)
+
+ *($s1 + 12) = $t0
+

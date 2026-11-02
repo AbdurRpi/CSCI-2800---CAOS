@@ -6,6 +6,8 @@
 #  int g = 7, h = 6, i = 5, j = 2;
 #  int f = g + h - i - j;
 
+# print_all_regs - to look at registery table
+
 
 main:   li $t1,7                # Load Immediate (li)   g = 7
         li $t2,6                # h = 6
