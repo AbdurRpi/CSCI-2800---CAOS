@@ -1,9 +1,14 @@
 # check 1
 # Load "check1.s"
 # print_all_regs - to look at registery table
-# < 91 lowercase - use branch blt (less than ) bgt (greater than)
+# < 91 lowercase , use branch blt (less than ) bgt (greater than)
 
 # check1.s
+# Service Calls 
+# 1 print integer
+# 4 print string
+# 8 read string
+# 10 exit program
 
 .data
 prompt: .asciiz "Enter a string (DONE to exit): "
@@ -24,7 +29,7 @@ READ:                          #loop to ask for anothe string
       syscall                  # Read input into string
 
       la $t0,string
-      lbu $t2,0($t0)
+      lbu $t2,0($t0)          # load the unsigned byte of string[0]
       beq $t2,$zero,EXIT      # End if there was no input
       la $t1,exitc
 
@@ -33,15 +38,15 @@ CHECK_DONE:
       lbu $t3,0($t1)           # Current byte of "DONE"
       beq $t3,$zero,END_DONE  # All four letters matched
       bne $t2,$t3,CONVERT     # A letter did not match
-      addi $t0,$t0,1
-      addi $t1,$t1,1
+      addi $t0,$t0,1          # increment through the word to check for match
+      addi $t1,$t1,1          # increment through the string to check for match
       j CHECK_DONE
 
 END_DONE:
       li $t4,10               # ASCII newline from pressing Enter
       beq $t2,$t4,EXIT        # Input was "DONE\n"
       beq $t2,$zero,EXIT      # Input was "DONE" without newline
-      j CONVERT               # "DONE123" is ordinary input
+      j CONVERT               # example "DONE123" is ordinary input
 
 CONVERT:
       la $a0,string
