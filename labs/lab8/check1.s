@@ -19,7 +19,7 @@ exitc:  .asciiz "DONE"                             # Done for exit value
 .globl main
 main:
 READ:                          #loop to ask for anothe string
-      li $v0,4                  #print call for print teh address of $v0
+      li $v0,4                 #print call for print teh address of $v0
       la $a0,prompt           
       syscall
 
