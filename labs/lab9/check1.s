@@ -1,4 +1,4 @@
-#check 1 
+# check 1 
 # load "check1.s"
 # print_all_regs
 
@@ -30,22 +30,30 @@ main:
 
 
 strlen:     
-         lbu $t2,0($t0)
-         addi $t0,$t0,1
-         slt $t0, $t0, $v0
-         bne $t1, $zero, nl
-         j strlen:
+         lbu $t2,0($t0)       # string[0]
+         addi $t0,$t0,1       # string[ 0 + 1] = string[1] = string[2]
+         addi $t1, $t0        # t1 has the count of how many bytes are in th string which is its length
+         #slt $t0, $t0, $$t0. # keep counting until string[0] !< string[0]
+         bne $t0, $zero, nl   # break if the counting hits a \n
+         j strlen
 
 
 # Use same features from lab 8 to trace through a words input 
 
-
 strcpy:
+       lw $ra, string         loads the word in its current state for example BRACADBR
+       jr $ra
+         
 
+wordtri:    
+         lbu $a0, $zero, string. # loads (word ex:) ABRACADABRA
+         subi $t2, $t2, 1 # subract the first index -1 = BRACADBRA
+         subi $t2, $t1, 1 # subtract the last element that was counted -1 = BRACADBR
+         lw $a0, strcpy 
+         slt $a0, 2     # if(len($a0 (the string)) < 2) 
+         bne $ao, $zero, end
 
-
-wordtri:
-
+         j wordtri        # Loop through until
 
 
 End:
