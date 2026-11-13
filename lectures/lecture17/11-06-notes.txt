@@ -1,0 +1,123 @@
+[11/06/2026]
+
+EXAM 2 --- grading is not done yet... :-(
+       --- grades will be available (and announced) by Monday
+
+HackRPI this weekend!  https://hackrpi.com
+
+Lab 08 --- feel free to have checkpoints checked off today/Mon
+            during any office hours
+
+================================================================
+
+ Logical Bitwise Operators...
+         ^^^^^^^
+
+ As a "bitwise" operator, we apply AND or OR to each pair of bits
+  in $t1 and $t2...
+
+    or $t0,$t1,$t2
+
+              OR
+            +-----                       $t1 $t2 | $t0
+    $t1 -----\    \                     ---------------
+              |    \                       0   0 |   0
+              |     >----- $t0             0   1 |   1
+              |    /                       1   0 |   1
+    $t2 -----/    /                        1   1 |   1
+            +-----
+
+
+    and $t0,$t1,$t2
+
+              AND
+            +----                       $t1 $t2 | $t0
+    $t1 ----|    \                     ---------------
+            |     |                       0   0 |   0
+            |     |----- $t0              0   1 |   0
+            |     |                       1   0 |   0
+    $t2 ----|    /                        1   1 |   1
+            +----
+
+
+    not ???
+    nor $t0,$t1,$0  --or--  nor $t0,$t1,$zero
+
+            +
+            |\  NOT                   $t1 | $t0
+            | \                      -----------
+    $t1 ----|  >----- $t0               0 |   1
+            | /                         1 |   0
+            |/
+            +
+
+
+  e.g., use AND to apply a bitwise mask (bitmask)...
+
+
+             $t1 ==> 0x1234abcd     TO DO: do this in binary...
+          AND        0x000000ff
+         -----------------------
+                     0x000000cd
+
+        isolate the low-order byte (e.g., 0xcd)
+
+          li  $t2,205        (0x000000cd)
+          and $t0,$t1,$t2
+
+          andi $t0,$t1,205   (0x00cd)
+
+-----------------------------------------------------------------------
+
+Shift-Left and Shift-Right instructions...
+
+  sll -- shift-left logical
+
+             binary: 00001010  (10)     each sll operation doubles the value
+          after sll: 00010100  (20)
+                            ^
+    after sll again: 00101000  (40)
+                            ^
+
+          sll $a0,$a0,1   # shift $a0 left one bit position
+                          #  (the leftmost bit is discarded)
+                          #  (the new rightmost bit is 0)
+
+          sll $a1,$a1,3   # shift $a1 left three bit positions
+                          #  (the three leftmost bits are discarded)
+                          #  (the new rightmost bits are 000)
+                          # $a1 = $a1 * 2^3 (multiplying by a power of 2)
+
+          e.g., in C, we might have:  x = x * 8;  ==> use sll
+          e.g., in C, we might have:  x = x * 9;  ==> use sll then add x
+                                      x = x * 8 + x;
+
+  srl -- shift-right logical
+
+             binary: 00001010 (10)
+          after srl: 00000101 (5)
+                     ^
+    after srl again: 00000010 (2)  integer division!
+                     ^
+
+          srl $a0,$a0,1   # shift $a0 right one bit position
+                          #  (the rightmost bit is discarded)
+                          #  (the new leftmost bit is 0)
+
+          srl $a1,$a1,3   # shift $a0 right three bit positions
+                          #  (the three rightmost bits are discarded)
+                          #  (the new leftmost bits are 000)
+                          # $a1 = $a1 / 2^3 (dividing by a power of 2)
+
+
+ SIGN EXTENSION    SignExtImm
+
+     li $t2,66
+     sb $t2,5($a0)        binary:                                  00000101 (5)
+                          sign-ext binary: 00000000000000000000000000000101 (5)
+     sb $t2,-3($a1)       binary:                                  11111101 (-3)
+                          sign-ext binary: 11111111111111111111111111111101 (-3)
+
+                                            00000011
+                                            11111100
+                                            11111101

@@ -1,5 +1,5 @@
 # Checkpoint 1
-# Use normal SPIM settings with delayed branches/loads disabled.
+
 
 .data
 string: .space 32             # Up to 31 input characters plus '\0'
@@ -22,7 +22,7 @@ main:
         la   $t0,string       # Start checking from the first character
 
 remove_nl:
-        lbu  $t2,0($t0)       # Read the current character
+        lbu  $t2,0($t0)       # Read the current character 
         beq  $t2,$zero,line   # Stop at the terminating zero
 
         li   $t3,10           # ASCII 10 represents newline
@@ -36,20 +36,18 @@ replace_nl:
 
 line:
         la   $a0,string       # Pass the original string's address
-        jal  wordtri          # Call the triangle function
-
+        jal  wordtri          # Call the  wordtri
         lw   $a0,0($sp)       # Restore main's saved registers
         lw   $ra,4($sp)
         addi $sp,$sp,8        # Release the eight reserved bytes
         jr   $ra             # Return instead of falling into strlen
 
 
-# ----------------------------------------------------------
+
 # strlen
-# Input:  $a0 = string address
-# Return: $v0 = number of characters, excluding '\0'
+# Input is the $a0 = string address
+# Return is the $v0 = number of characters, excluding '\0'
 # Leaves $a0 unchanged.
-# ----------------------------------------------------------
 
 strlen:
         move $t0,$a0          # Pointer to the current character
@@ -67,14 +65,14 @@ strlen_done:
         jr   $ra             # Return the length in $v0
 
 
-# ----------------------------------------------------------
+
 # strcpy
-# Input:  $a0 = destination address
+# Input is  $a0 = destination address
 #         $a1 = source address
-# Return: $v0 = destination address
+# Return is $v0 = destination address
 #
-# Copy every character, including the terminating zero.
-# ----------------------------------------------------------
+# Copys every character, including the terminating zero.
+
 
 strcpy:
         move $t0,$a0          # Destination pointer
@@ -95,18 +93,17 @@ strcpy_done:
         jr   $ra
 
 
-# ----------------------------------------------------------
 # wordtri
 # Input: $a0 = original string address
 #
 # Allocate and modify a COPY of the original string.
 # Print each row with one extra indentation space.
 # Remove one character from each end after each row.
-# ----------------------------------------------------------
+
 
 wordtri:
         addi $sp,$sp,-24      # Reserve space for six saved registers
-        sw   $s0,0($sp)       # Preserve the saved registers we use
+        sw   $s0,0($sp)       # Preserve the saved registers  used
         sw   $s1,4($sp)
         sw   $s2,8($sp)
         sw   $s3,12($sp)
@@ -163,7 +160,7 @@ print_word:
         addi $s1,$s1,-2       # New length: remove one from each end
 
         add  $t0,$s0,$s1      # Address immediately after the new last character
-        sb   $zero,0($t0)     # End the shortened COPY with '\0'
+        sb   $zero,0($t0)     # End the shortened copy with '\0'
 
         addi $s2,$s2,1        # Next row gets one more indentation space
         j    Loop

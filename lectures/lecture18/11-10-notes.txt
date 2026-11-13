@@ -1,0 +1,66 @@
+[11/10/2026]
+
+EXAM 2 AVERAGE: 29.5/40 (74%) -- stddev 6.5
+
+=========================================================
+
+PROGRAM COUNTER (PC) -- special register that keeps track
+                         of the next instruction to execute...
+
+                        the $PC is incremented by 4 (one 32-bit word)
+                         immediately when we start an instruction
+
+MIPS PIPELINE -- 5 stages...
+
+Instruction Fetch (IF)
+-- retrieve the current instruction at $PC
+-- then $PC <= $PC + 4
+
+Instruction Decode (ID)
+-- decode the instruction opcode/funct
+-- copy required operand values from registers...(into ALU)
+                                                       ^^^
+                                             Arithmetic & Logic Unit
+Execute (EX)
+-- execute the instruction
+---- so either ALU operation occurs (e.g., and, andi, or, ori, etc.)
+---- or calculate memory address for load/store operation (e.g., lw, sw, etc.)
+
+Memory Access (MEM)
+-- read from or write to memory for lw, sw, etc.
+
+Write Back (WB)
+-- store the final result back to a destination register
+
+Temporary "pipeline registers" between each of these stages...
+...these hidden registers hold control signals, data that is flowing
+    from one stage to the next, etc.
+
+
+
+e.g.,          li $t1,7    <== pseudo-instruction, so replace with ori
+
+   0x34090007  ori $9, $0, 7   <== $t1 <= 0 | 7
+
+                             opcode   rs    rt      immediate
+                          I: 001101 00000 01001 0000000000000111
+
+                             00110100 00001001 00000000 00000111
+
+                          0x   3   4    0   9    0   0    0   7
+
+
+
+e.g., 0x8fa40000  lw $4, 0($29)                   ; 183: lw $a0 0($sp)
+
+                             opcode   rs    rt     immediate
+                          I: 100011 11101 00100 0000000000000000
+
+                             10001111 10100100 00000000 00000000
+
+                          0x   8   f    a   4    0   0    0   0
+
+TO DO: do this encoding/decoding for R-format instructions, also J-format...
+
+
+
