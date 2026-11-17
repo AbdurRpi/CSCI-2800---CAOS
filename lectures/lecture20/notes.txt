@@ -1,0 +1,8 @@
+to determine the format quickly on an exam
+
+look at the first 6 bytes and for example if it is zero
+then the 0 part in the mips card means its that series of commands 
+you can look at the last 5 bits of the fucntion and the Mips sheet tells you exatcly what
+that combination is to find the format instructio R, I or J
+ 
+ sub has 00-opcode and then 22 as last 5 bit function code

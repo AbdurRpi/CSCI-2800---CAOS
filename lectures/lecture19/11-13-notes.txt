@@ -1,0 +1,77 @@
+[11/13/2026]
+
+           # assume we have a 32-bit int array defined....
+           # $s1 iterates through each element...
+
+    L0:    lw $t0,0($s1)     # 32-bit int value...
+
+           move $a0,$t0      # print_int
+           li $v0,1
+           syscall
+
+           addi $s1,$s1,4    # move to the next element of int array
+           bne $t0,$zero,L0  # the list ends in 0x00000000
+
+ PC---->   and $t0,$t1,$t2   # after the loop, ...
+           or $t1,$t2,$t3
+           and $t4,$t5,$t6
+           or $t5,$t6,$t7
+           ...
+           
+
+ INSTRUCTION PIPELINE
+
+ e.g.                1    2    3    4    5    6    7   (much less than 16 cycles)
+ ====================================================
+  and $t0,$t1,$t2   IF   ID   EX   WB
+  or $t1,$t2,$t3    --   IF   ID   EX   WB
+  and $t4,$t5,$t6   --   --   IF   ID   EX   WB
+  or $t5,$t6,$t7    --   --   --   IF   ID   EX   WB
+  ...
+ ====================================================
+
+ e.g.                1    2    3    4    5    6
+ ================================================
+  lw $t0,128($t2)   IF   ID   EX  MEM   WB
+  or $t1,$t2,$t3    --   IF   ID   EX   ..   WB
+  and $t4,$t5,$t6   --   --   IF   ID   EX   ..
+  or $t5,$t6,$t7    --   --   --   IF   ID   EX
+  ...
+ ================================================
+
+ e.g.                    1    2    3    4    5
+ ================================================
+      bne $t0,$zero,L0  IF   ID   EX  take-the-branch...!
+      and $t0,$t1,$t2   --   IF   ID  throw-away
+      or $t1,$t2,$t3    --   --   IF  throw-away
+  L0: lw $t0,0($s1)     --   --   --   IF   ID
+      or $a0,$t0,$zero  --   --   --   --   IF
+  ...
+ ================================================
+
+
+
+
+
+
+
+f1:    addi $sp,$sp,-4
+       sw $ra,0($sp)
+       ...
+       lw $ra,$0($sp)
+       addi $sp,$sp,4
+       jr $ra    # PC <= $ra
+    
+
+main:  ...
+       jal f1    # $ra <= PC+8; PC <= f1
+       nop
+       and ...
+       ...
+       j f1
+
+
+
+
+
+
