@@ -1,187 +1,266 @@
 /* compile via:
-Bash$ gcc -Wall -Werror check3.c -o check3
+Bash$ gcc -Wall  -Werror checkpoint2.c -o checkpoint2
+Bash$ ./checkpoint2 line input.txt another.txt
 */
 
-#include <stdio.h>
+#include <stdio.h>      /* perror only; file data uses open/read/write/close */
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-#include <sys/resource.h>
 #include <fcntl.h>
 #include <ctype.h>
-#include <errno.h>
 #include <string.h>
+#include <errno.h>
 
-int process_file(char *filename)
+/* write can write fewer bytes than requested. Finish the remaining bytes. */
+int write_all(int fd, const char *text, size_t length)
 {
-   unsigned long uppercase = 0;
-   unsigned long lowercase = 0;
-   unsigned long digits = 0;
-   unsigned long punctuation = 0;
-   unsigned long lines = 0;
-   pid_t child_pid = getpid();
-
-   printf("CHILD %ld: Processing \"%s\"...\n",
-          (long)child_pid, filename);
-
-   int fd = open(filename, O_RDONLY);
-
-   if (fd == -1)
+   while (length > 0)
    {
-      fprintf(stderr, "CHILD %ld: open() failed: %s\n",
-              (long)child_pid, strerror(errno));
-      return EXIT_FAILURE;
-   }
-
-   char buffer[16];
-   int bytes_read;
-
-   while ((bytes_read = read(fd, buffer, sizeof(buffer))) > 0){
-      for (int i = 0; i < bytes_read; i++){
-         unsigned char c = (unsigned char)buffer[i];
-         if (isupper(c)){
-            uppercase++;
-         }if (islower(c)){
-            lowercase++;
-         }if (isdigit(c)){
-            digits++;
-         }if (ispunct(c)){
-            punctuation++;
-         }if (c == '\n'){
-            lines++;
-         }
+      int written = write(fd, text, length);
+      /* EINTR means a signal interrupted the call; retry the remaining data. */
+      if (written < 0 && errno == EINTR)
+      {
+         continue;
       }
+      if (written <= 0)
+      {
+         return -1;
+      }
+      /* Move past the bytes already written and reduce the remaining count. */
+      text += written;
+      length -= written;
    }
-
-   int child_status = EXIT_SUCCESS;
-
-   if (bytes_read == -1){
-      fprintf(stderr, "CHILD %ld: read() failed: %s\n",
-              (long)child_pid, strerror(errno));
-      child_status = EXIT_FAILURE;
-   }
-
-   if (close(fd) == -1){
-      fprintf(stderr, "CHILD %ld: close() failed: %s\n",
-              (long)child_pid, strerror(errno));
-      child_status = EXIT_FAILURE;
-   }if (child_status == EXIT_FAILURE){
-      return EXIT_FAILURE;
-   }
-
-   printf("CHILD %ld: Lines: %lu (\"%s\")\n",
-          (long)child_pid, lines, filename);
-   printf("CHILD %ld: Uppercase characters: %lu (\"%s\")\n",
-          (long)child_pid, uppercase, filename);
-   printf("CHILD %ld: Lowercase characters: %lu (\"%s\")\n",
-          (long)child_pid, lowercase, filename);
-   printf("CHILD %ld: Digit characters: %lu (\"%s\")\n",
-          (long)child_pid, digits, filename);
-   printf("CHILD %ld: Punctuation characters: %lu (\"%s\")\n",
-          (long)child_pid, punctuation, filename);
-
-   return EXIT_SUCCESS;
+   return 0;
 }
 
-int main(int argc, char **argv){
-   if (argc < 2){
-      fprintf(stderr, "USAGE: %s <filename> ...\n", argv[0]);
-      return EXIT_FAILURE;
-   }if (setvbuf(stdout, NULL, _IONBF, 0) != 0){
-      fprintf(stderr, "setvbuf() failed\n");
-      return EXIT_FAILURE;
-   }
+/* Called by one child. fd is the descriptor inherited from its parent.
+   Return the match count on success or EXIT_FAILURE after reporting an error.
+   EXIT_FAILURE can have the same numeric value as a valid match count. */
+int search_file(int fd, const char *substring)
+{
+   /* NULL lets the first realloc behave like malloc. length counts file bytes. */
+   char *buffer = NULL;
+   int length = 0;
+   unsigned int occurrences = 0;
 
-   struct rlimit process_limit;
-
-   if (getrlimit(RLIMIT_NPROC, &process_limit) == -1){
-      perror("getrlimit() failed");
-      return EXIT_FAILURE;
-   }if (process_limit.rlim_cur == RLIM_INFINITY ||
-       process_limit.rlim_cur > 64){
-      process_limit.rlim_cur = 64;
-   }if (setrlimit(RLIMIT_NPROC, &process_limit) == -1)
+   /* Read the file into one growing buffer. Each read asks for 4096 bytes. */
+   while (1)
    {
-      perror("setrlimit() failed");
+      /* Keep the old pointer until allocation succeeds, so it can still be freed. */
+      char *larger = realloc(buffer, length + 4096);
+      if (larger == NULL)
+      {
+         perror("realloc() failed");
+         free(buffer);
+         close(fd);
+         return EXIT_FAILURE;
+      }
+      buffer = larger;
+
+      /* Append new bytes after those already read. No string terminator is needed. */
+      int bytes_read = read(fd, buffer + length, 4096);
+      if (bytes_read < 0 && errno == EINTR)
+      {
+         continue;
+      }
+      if (bytes_read == -1)
+      {
+         perror("read() failed");
+         free(buffer);
+         close(fd);
+         return EXIT_FAILURE;
+      }
+      /* A return value of zero means end-of-file. */
+      if (bytes_read == 0)
+      {
+         break;
+      }
+      length += bytes_read;
+   }
+
+   /* The entire file is in memory, so this child no longer needs its descriptor. */
+   if (close(fd) == -1)
+   {
+      perror("close() failed");
+      free(buffer);
       return EXIT_FAILURE;
    }
 
-   int number_of_files = argc - 1;
-   pid_t *children = calloc(number_of_files, sizeof(pid_t));
-
-   if (children == NULL){
-      perror("calloc() failed");
-      return EXIT_FAILURE;
+   int substring_length = strlen(substring);
+   if (substring_length > length)
+   {
+      free(buffer);
+      return 0;
    }
 
-   int children_created = 0;
-   int overall_status = EXIT_SUCCESS;
-
-   for (int i = 1; i < argc; i++){
-      pid_t p = fork();
-
-      if (p == -1){
-         fprintf(stderr, "PARENT %ld: fork() failed for \"%s\": %s\n",
-                 (long)getpid(), argv[i], strerror(errno));
-         overall_status = EXIT_FAILURE;
-         continue;
-      }
-
-      if (p == 0){
-         free(children);
-         int result = process_file(argv[i]);
-         exit(result);
-      }
-
-      children[children_created] = p;
-      children_created++;
-   }if (children_created == number_of_files){
-      printf("PARENT %ld: All input files have been assigned to child processes\n",
-             (long)getpid());
-   }else{
-      printf("PARENT %ld: Only %d of %d input files were assigned\n",
-             (long)getpid(), children_created, number_of_files);
-   }
-
-   for (int i = 0; i < children_created; i++){
-      int status;
-      pid_t finished;
-
-      do
+   /* i is a possible match start. Advance by one to include overlapping matches. */
+   for (int i = 0; i <= length - substring_length; i++)
+   {
+      /* j counts how many characters match at this starting position. */
+      int j = 0;
+      while (j < substring_length)
       {
-         finished = waitpid(children[i], &status, 0);
-      }
-      while (finished == -1 && errno == EINTR);
-
-      if (finished == -1)
-      {
-         fprintf(stderr, "PARENT %ld: waitpid() failed: %s\n",
-                 (long)getpid(), strerror(errno));
-         overall_status = EXIT_FAILURE;
-         continue;
-      }
-
-      if (WIFEXITED(status))
-      {
-         int exit_status = WEXITSTATUS(status);
-
-         printf("PARENT %ld: Child process %ld terminated with exit status %d\n",
-                (long)getpid(), (long)finished, exit_status);
-
-         if (exit_status != EXIT_SUCCESS)
+         /* Compare lowercase values without changing the original file bytes.
+            The unsigned char casts make calls to tolower valid for all bytes. */
+         int a = tolower((unsigned char)*(buffer + i + j));
+         int b = tolower((unsigned char)*(substring + j));
+         if (a != b)
          {
-            overall_status = EXIT_FAILURE;
+            break;
          }
+         j++;
       }
-      else if (WIFSIGNALED(status))
+
+      /* If comparison stopped early, try the next starting position. */
+      if (j != substring_length)
       {
-         printf("PARENT %ld: Child process %ld terminated by signal %d\n",
-                (long)getpid(), (long)finished, WTERMSIG(status));
-         overall_status = EXIT_FAILURE;
+         continue;
+      }
+
+      /* Walk backward up to 16 bytes, stopping at a newline or file start. */
+      int start = i;
+      int before = 0;
+      while (start > 0 && before < 16)
+      {
+         if (*(buffer + start - 1) == '\n')
+         {
+            break;
+         }
+         start--;
+         before++;
+      }
+
+      /* Walk forward up to 16 bytes after the match. */
+      int end = i + substring_length;
+      int after = 0;
+      while (end < length && after < 16)
+      {
+         if (*(buffer + end) == '\n')
+         {
+            break;
+         }
+         end++;
+         after++;
+      }
+
+      /* Combine the context and newline into one output record. */
+      /* end is exclusive. The extra byte holds the output newline, not a NUL. */
+      int output_length = end - start + 1;
+      char *output = malloc(output_length);
+      if (output == NULL)
+      {
+         perror("malloc() failed");
+         free(buffer);
+         return EXIT_FAILURE;
+      }
+      memcpy(output, buffer + start, end - start);
+      *(output + output_length - 1) = '\n';
+      int result = write_all(STDOUT_FILENO, output, output_length);
+      free(output);
+      if (result == -1)
+      {
+         perror("write() failed");
+         free(buffer);
+         return EXIT_FAILURE;
+      }
+      occurrences++;
+   }
+
+   free(buffer);
+   /* Only eight bits are available in the child exit status: 256 wraps to zero. */
+   return (int)(occurrences % 256);
+}
+
+int main(int argc, char **argv)
+{
+   /* Argument 1 is the search text; arguments 2 onward are filenames.
+      Reject newline searches so a match itself cannot cross a line boundary. */
+   if (argc < 3 || **(argv + 1) == '\0' || strchr(*(argv + 1), '\n') != NULL)
+   {
+      const char *message = "USAGE: ./checkpoint2 <substring> <filename> ...\n";
+      write_all(STDERR_FILENO, message, strlen(message));
+      return EXIT_FAILURE;
+   }
+
+   int child_count = 0;
+   int result = EXIT_SUCCESS;
+
+   for (int i = 2; i < argc; i++)
+   {
+      /* The assignment requires the PARENT to open each file before fork. */
+      int fd = open(*(argv + i), O_RDONLY);
+
+      if (fd == -1)
+      {
+         perror(*(argv + i));
+         result = EXIT_FAILURE;
+         continue;
+      }
+
+      /* Both processes keep running here. The child receives its own descriptor
+         referring to the same open file. Only the child will read from it. */
+      pid_t pid = fork();
+
+      if (pid == -1)
+      {
+         perror("fork() failed");
+         close(fd);
+         result = EXIT_FAILURE;
+         continue;
+      }
+
+      /* Zero identifies the child. Exit here so it never forks more children. */
+      if (pid == 0)
+      {
+         int child_status = search_file(fd, *(argv + 1));
+         exit(child_status);
+      }
+
+      /* Only the parent reaches this point. Closing its copy leaves the
+         child's descriptor open. Continue launching the remaining children. */
+      child_count++;
+
+      if (close(fd) == -1)
+      {
+         perror("close() failed");
+         result = EXIT_FAILURE;
       }
    }
 
-   free(children);
-   return overall_status;
+   /* -1 means wait for any child. Launch all children before waiting. */
+   while (child_count > 0)
+   {
+      int status;
+      /* -1 selects any child; 0 blocks until one finishes.
+         Reaping each child prevents it from remaining a zombie. */
+      pid_t waited = waitpid(-1, &status, 0);
+
+      if (waited == -1)
+      {
+         if (errno == EINTR)
+         {
+            continue;
+         }
+
+         perror("waitpid() failed");
+         return EXIT_FAILURE;
+      }
+
+      child_count--;
+
+      if (WIFSIGNALED(status))
+      {
+         const char *message = "ERROR: child terminated by a signal\n";
+         write_all(STDERR_FILENO, message, strlen(message));
+         result = EXIT_FAILURE;
+         
+      }
+      /* After a normal exit, WEXITSTATUS(status) gives the child's count.
+         Nonzero match counts are normal, not parent failures. */
+         printf("Child %ld returned %d\n", (long)waited, WEXITSTATUS(status));
+   }
+
+   return result;
 }

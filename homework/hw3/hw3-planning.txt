@@ -1,0 +1,757 @@
+============================================================
+DATA STRUCTURES
+============================================================
+
+Label:
+    name                    // Dynamically allocated label name
+    address                 // Address of its first generated instruction
+
+Instruction:
+    operation               // Real instruction name
+    address                 // Address of this generated instruction
+
+    opcode                  // Six-bit instruction opcode
+    function_code           // Six-bit function code for R format
+
+    rs                      // Register number, initially zero
+    rt                      // Register number, initially zero
+    rd                      // Register number, initially zero
+    shift_amount            // Initially zero
+    immediate               // Initially zero
+
+    target_label            // Copied label name, or NULL
+    format                  // R, I, or J
+
+ParsedLine:
+    label                   // Optional copied label name
+    operation               // Instruction name
+    operand1                // First operand
+    operand2                // Second operand, if present
+    operand3                // Third operand, if present
+
+    memory_offset           // Used for memory instructions
+    memory_base             // Used for memory instructions
+
+
+Collections:
+    label_table             // Dynamically allocated collection of Label records
+    label_count
+    label_capacity
+
+    instruction_list        // Dynamically allocated collection of Instruction records
+    instruction_count
+    instruction_capacity
+
+
+IMPORTANT:
+    Each stored Instruction represents ONE real machine instruction.
+
+    A pseudo-instruction that expands into two instructions
+    creates TWO entries in instruction_list.
+
+    Use pointer arithmetic to access entries in the C implementation.
+
+    For example:
+        (label_table + position)->address
+
+    Copy any label name that must survive after the current line is freed.
+
+
+============================================================
+MAIN
+============================================================
+
+main(argc, argv):
+
+    Set stdout to unbuffered output:
+        setvbuf(stdout, NULL, _IONBF, 0)
+
+    Initialize all owned pointers to NULL.
+    Initialize counts and capacities to zero.
+    Initialize input file descriptor to an invalid value.
+
+    If argc is not 2:
+        Report "ERROR: expected one input filename" to stderr.
+        Return failure.
+
+    Obtain filename from *(argv + 1).
+
+    Open filename using open(filename, O_RDONLY).
+
+    If open fails:
+        Report the system error using an "ERROR: ..." prefix.
+        Return failure.
+
+    Set current_address to 0x00400000.
+
+
+    --------------------------------------------------------
+    FIRST PASS: PARSE, RECORD LABELS, AND EXPAND INSTRUCTIONS
+    --------------------------------------------------------
+
+    Repeatedly call read_line:
+
+        If reading fails:
+            Clean up owned resources.
+            Report the error.
+            Return failure.
+
+        If end of file is reached with no remaining line:
+            Stop reading.
+
+        Call parse_line on the returned line.
+
+        If the line is blank:
+            Free the line.
+            Continue to the next line.
+
+        If the parsed line defines a label:
+
+            Create a Label record.
+
+            Copy the label name into the record.
+            Set its address to current_address.
+
+            Append the record to label_table.
+
+            // Record the address BEFORE expanding the instruction.
+            // A label on a pseudo-instruction points to the first
+            // generated real instruction.
+
+        Call expand_instruction using the parsed operation and operands.
+
+        For each real instruction returned by expansion:
+
+            Set its address to current_address.
+
+            Append it to instruction_list.
+
+            Increase current_address by 4.
+
+        Free the parsed line's temporary strings.
+        Free the original input line.
+
+    Close the input file.
+
+    If close fails:
+        Clean up owned memory.
+        Report the system error.
+        Return failure.
+
+    Mark the file descriptor as closed.
+
+
+    --------------------------------------------------------
+    SECOND PASS: RESOLVE LABELS AND PRODUCE MACHINE CODE
+    --------------------------------------------------------
+
+    Set position to zero.
+
+    While position is less than instruction_count:
+
+        Get the instruction at:
+            instruction_list + position
+
+        If its operation is beq or bne:
+
+            target_address = find_label(instruction.target_label)
+
+            // Use signed arithmetic because backward offsets are negative.
+            difference = target_address - (instruction.address + 4)
+
+            instruction.immediate = difference / 4
+
+        Otherwise, if its operation is j or jal:
+
+            target_address = find_label(instruction.target_label)
+
+            instruction.immediate =
+                (target_address shifted right by 2) AND 0x03FFFFFF
+
+        machine_word = encode_instruction(instruction)
+
+        Call print_binary(machine_word).
+
+        Increase position by 1.
+
+    Write "end" followed by a newline to stdout.
+
+    Free all label names.
+    Free label_table.
+
+    Free all instruction target-label names.
+    Free instruction_list.
+
+    Return success.
+
+
+============================================================
+READ ONE COMPLETE LINE
+============================================================
+
+read_line(file_descriptor):
+
+    Allocate an initial character buffer.
+    Set length to zero.
+    Keep track of the buffer capacity.
+
+    Repeatedly:
+
+        Read one byte using read(file_descriptor, address_of_byte, 1).
+
+        If read returns -1:
+            Free the line buffer.
+            Return an error.
+
+        If read returns 0:
+
+            If length is zero:
+                Free the buffer.
+                Return end-of-file status.
+
+            Otherwise:
+                Append a terminating zero byte.
+                Return the final line.
+
+        If byte is newline:
+            Append a terminating zero byte.
+            Return the line.
+
+        If there is not enough room for byte and the terminating zero:
+
+            Increase the buffer capacity.
+            Resize the allocation.
+            Check whether allocation failed.
+
+        Store byte at:
+            buffer + length
+
+        Increase length by 1.
+
+
+============================================================
+PARSE A LINE
+============================================================
+
+parse_line(line):
+
+    Initialize an empty ParsedLine record.
+
+    Find the first '#' character.
+
+    If found:
+        Replace it with a terminating zero.
+        // Everything after it is a comment.
+
+    Skip leading whitespace using isspace.
+
+    Remove trailing whitespace.
+
+    If the remaining text is empty:
+        Return blank-line status.
+
+    Look for a colon.
+
+    If a colon exists:
+
+        Copy the text before the colon as the label name.
+
+        Continue parsing after the colon.
+        Skip whitespace.
+
+    Read the operation name.
+        Stop at its separating whitespace.
+
+    Skip the separating whitespace.
+
+    Find the instruction's operand layout.
+
+    If operation uses three comma-separated operands:
+        Separate operand1, operand2, and operand3.
+
+    Otherwise, if it uses two comma-separated operands:
+        Separate operand1 and operand2.
+
+    Otherwise, if it uses one operand:
+        Store operand1.
+
+    If operation is lw, sw, sb, or sh:
+
+        Parse:
+            register,offset(base_register)
+
+        Store:
+            operand1 = register
+            memory_offset = offset
+            memory_base = base_register
+
+    Return the parsed record.
+
+    // Input syntax is guaranteed valid.
+    // Do not interpret uppercase target operands as label definitions.
+    // A definition is identified by its colon.
+
+
+============================================================
+CONVERT A REGISTER NAME TO ITS NUMBER
+============================================================
+
+register_number(name):
+
+    Look for name in the register-name table.
+
+    The table contains:
+
+        $zero -> 0
+        $at   -> 1
+
+        $v0   -> 2
+        $v1   -> 3
+
+        $a0   -> 4
+        $a1   -> 5
+        $a2   -> 6
+        $a3   -> 7
+
+        $t0   -> 8
+        $t1   -> 9
+        $t2   -> 10
+        $t3   -> 11
+        $t4   -> 12
+        $t5   -> 13
+        $t6   -> 14
+        $t7   -> 15
+
+        $s0   -> 16
+        $s1   -> 17
+        $s2   -> 18
+        $s3   -> 19
+        $s4   -> 20
+        $s5   -> 21
+        $s6   -> 22
+        $s7   -> 23
+
+        $t8   -> 24
+        $t9   -> 25
+
+        $k0   -> 26
+        $k1   -> 27
+
+        $gp   -> 28
+        $sp   -> 29
+        $fp   -> 30
+        $ra   -> 31
+
+    Return the matching number.
+
+    // Register 30 can also be recognized as $s8 if needed.
+
+
+============================================================
+CONVERT AN IMMEDIATE TO A NUMBER
+============================================================
+
+parse_immediate(text):
+
+    Convert the numeric text to a signed integer.
+    Preserve a leading minus sign.
+
+    Return the numeric value.
+
+    // Example:
+    // "-6" becomes the integer -6.
+    // Encoding later keeps its lower 16 bits.
+
+
+============================================================
+EXPAND AN INPUT INSTRUCTION
+============================================================
+
+expand_instruction(parsed):
+
+    If operation is move:
+
+        destination = operand1
+        source = operand2
+
+        Generate:
+            add destination,source,$zero
+
+        Return that one real instruction.
+
+
+    If operation is subi:
+
+        destination = operand1
+        source = operand2
+        value = parse_immediate(operand3)
+
+        Generate:
+            addi destination,source,negative_of_value
+
+        Return that one real instruction.
+
+
+    If operation is li:
+
+        destination = operand1
+        value = parse_immediate(operand2)
+
+        If value is nonnegative:
+            Generate:
+                ori destination,$zero,value
+
+        Otherwise:
+            Generate:
+                addi destination,$zero,value
+
+        Return that one real instruction.
+
+
+    If operation is bge:
+
+        Generate these two instructions in this order:
+
+            slt $at,operand1,operand2
+            beq $at,$zero,operand3
+
+        Return both real instructions.
+
+
+    If operation is ble:
+
+        Generate:
+
+            slt $at,operand2,operand1
+            beq $at,$zero,operand3
+
+        Return both real instructions.
+
+
+    If operation is blt:
+
+        Generate:
+
+            slt $at,operand1,operand2
+            bne $at,$zero,operand3
+
+        Return both real instructions.
+
+
+    If operation is bgt:
+
+        Generate:
+
+            slt $at,operand2,operand1
+            bne $at,$zero,operand3
+
+        Return both real instructions.
+
+
+    Otherwise:
+
+        Generate one real instruction using the original operation
+        and operands.
+
+        Return that instruction.
+
+
+    IMPORTANT:
+        Each generated instruction is passed through make_real_instruction.
+
+        Branch and jump target names are kept as strings.
+        Their addresses are resolved during the second pass.
+
+
+============================================================
+BUILD ONE REAL INSTRUCTION RECORD
+============================================================
+
+make_real_instruction(operation, operands):
+
+    Create an Instruction record.
+    Initialize every numeric field to zero.
+    Set target_label to NULL.
+    Store operation.
+
+    Find opcode and function code using the instruction table.
+
+
+    If operation is add, sub, and, or, nor, or slt:
+
+        Set format to R.
+
+        rd = register_number(operand1)
+        rs = register_number(operand2)
+        rt = register_number(operand3)
+
+        Leave shift_amount zero.
+
+
+    Otherwise, if operation is sll or srl:
+
+        Set format to R.
+
+        rd = register_number(operand1)
+        rt = register_number(operand2)
+        shift_amount = parse_immediate(operand3)
+
+        Leave rs zero.
+
+
+    Otherwise, if operation is jr:
+
+        Set format to R.
+
+        rs = register_number(operand1)
+
+        Leave rt, rd, and shift_amount zero.
+
+
+    Otherwise, if operation is addi, andi, or ori:
+
+        Set format to I.
+
+        rt = register_number(operand1)
+        rs = register_number(operand2)
+        immediate = parse_immediate(operand3)
+
+
+    Otherwise, if operation is lw, sw, sb, or sh:
+
+        Set format to I.
+
+        rt = register_number(the register before the comma)
+        rs = register_number(the register inside parentheses)
+        immediate = parse_immediate(the offset before parentheses)
+
+
+    Otherwise, if operation is beq or bne:
+
+        Set format to I.
+
+        rs = register_number(operand1)
+        rt = register_number(operand2)
+
+        Copy operand3 into target_label.
+        Leave immediate zero until the second pass.
+
+
+    Otherwise, if operation is j or jal:
+
+        Set format to J.
+
+        Copy operand1 into target_label.
+        Leave immediate zero until the second pass.
+
+
+    Return the completed record.
+
+
+============================================================
+INSTRUCTION INFORMATION TABLE
+============================================================
+
+Store these numeric opcode and function-code values.
+
+R-format instructions:
+    operation     opcode     function_code
+
+    add           0          32
+    sub           0          34
+    and           0          36
+    or            0          37
+    nor           0          39
+    slt           0          42
+    sll           0          0
+    srl           0          2
+    jr            0          8
+
+I-format instructions:
+    operation     opcode
+
+    addi          8
+    andi          12
+    ori           13
+    lw            35
+    sw            43
+    sb            40
+    sh            41
+    beq           4
+    bne           5
+
+J-format instructions:
+    operation     opcode
+
+    j             2
+    jal           3
+
+    // slt is needed internally for pseudo-instruction expansion.
+    // All numbers in this table are written in decimal.
+
+
+============================================================
+APPEND A RECORD TO A DYNAMIC COLLECTION
+============================================================
+
+append_record(collection, count, capacity, new_record):
+
+    If count equals capacity:
+
+        If capacity is zero:
+            Choose an initial capacity.
+        Otherwise:
+            Increase the capacity.
+
+        Resize the collection's allocated storage.
+        Check whether allocation failed.
+
+    Store new_record at:
+        collection + count
+
+    Increase count by 1.
+
+    Return the updated pointer, count, and capacity.
+
+    // The caller must receive the updated pointer because resizing
+    // may move the allocation to a different memory address.
+
+
+============================================================
+LOOK UP A LABEL
+============================================================
+
+find_label(name):
+
+    Set position to zero.
+
+    While position is less than label_count:
+
+        Get the record at:
+            label_table + position
+
+        Compare its stored name with name.
+
+        If equal:
+            Return its address.
+
+        Increase position by 1.
+
+    Report an error if no match exists.
+
+    // Valid input is guaranteed to reference existing labels.
+    // Forward references work because this lookup happens
+    // after the entire first pass is complete.
+
+
+============================================================
+ENCODE ONE REAL INSTRUCTION
+============================================================
+
+encode_instruction(instruction):
+
+    Use an unsigned 32-bit value named word.
+    Set word to zero.
+
+    If format is R:
+
+        word = opcode shifted left 26
+
+        word = word OR rs shifted left 21
+        word = word OR rt shifted left 16
+        word = word OR rd shifted left 11
+        word = word OR shift_amount shifted left 6
+        word = word OR function_code
+
+
+    Otherwise, if format is I:
+
+        immediate_bits = immediate AND 0xFFFF
+
+        word = opcode shifted left 26
+
+        word = word OR rs shifted left 21
+        word = word OR rt shifted left 16
+        word = word OR immediate_bits
+
+
+    Otherwise, if format is J:
+
+        target_bits = immediate AND 0x03FFFFFF
+
+        word = opcode shifted left 26
+        word = word OR target_bits
+
+
+    Return word.
+
+    IMPORTANT:
+        Convert fields to an unsigned 32-bit type before shifting.
+
+        Do not reverse the printed bit order based on machine endianness.
+        The output is always the numeric word, highest bit first.
+
+
+============================================================
+PRINT ONE MACHINE WORD
+============================================================
+
+print_binary(word):
+
+    Set bit_position to 31.
+
+    While bit_position is greater than or equal to zero:
+
+        bit = (word shifted right by bit_position) AND 1
+
+        If bit equals zero:
+            Output character '0'.
+        Otherwise:
+            Output character '1'.
+
+        Decrease bit_position by 1.
+
+    Output one newline.
+
+    // Exactly 32 digits are printed.
+    // No spaces, addresses, instruction names, or prefixes.
+
+
+============================================================
+ERROR HANDLING AND CLEANUP
+============================================================
+
+report_error(message, system_error):
+
+    Write one line to stderr beginning with:
+        "ERROR: "
+
+    If reporting a failed operation that sets errno:
+        Use perror with the appropriate prefix.
+
+    Otherwise:
+        Use fprintf to stderr.
+
+    Do not print an error to stdout.
+
+
+cleanup:
+
+    If the input file is still open:
+        Close it.
+
+    Free any unfinished line buffer.
+    Free any temporary parsed strings.
+
+    For every stored label:
+        Free its copied name.
+
+    Free label_table.
+
+    For every stored instruction:
+        Free its copied target_label if present.
+
+    Free instruction_list.
+
+    // On failure, return EXIT_FAILURE.
+    // On successful completion, return EXIT_SUCCESS.
